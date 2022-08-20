@@ -1,12 +1,10 @@
 package ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu;
 
-import org.telegram.telegrambots.meta.api.objects.Message;
-
-import java.util.Arrays;
-
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.*;
 
 public enum KeyboardButton {
+    NOT_COMMAND(
+            null, null),
     START(
             START_MENU, "/start"),
 
@@ -55,13 +53,5 @@ public enum KeyboardButton {
 
     public String getButtonText() {
         return buttonText;
-    }
-
-    public static KeyboardPage parseMessage(Message message) {
-        return Arrays.stream(values())
-                .filter(button -> button.getButtonText().equals(message.getText()))
-                .map(KeyboardButton::getTargetPage)
-                .findAny()
-                .orElse(NOT_COMMAND);
     }
 }
