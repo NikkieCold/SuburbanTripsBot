@@ -1,4 +1,4 @@
-package ua.nikkie.SuburbanTripsBot.navigation;
+package ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu;
 
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReplyKeyboardBuilder {
 
@@ -22,10 +23,12 @@ public class ReplyKeyboardBuilder {
         return new ReplyKeyboardMarkup(rowsList);
     }
 
-    public ReplyKeyboardBuilder addRow(String... buttons) {
+    public ReplyKeyboardBuilder addRow(KeyboardButton... buttons) {
         rowsList.add(new KeyboardRow());
         rowsList.get(rowsList.size() - 1)
-            .addAll(Arrays.asList(buttons));
+            .addAll(Arrays.stream(buttons)
+                    .map(KeyboardButton::getButtonText)
+                    .collect(Collectors.toList()));
 
         return this;
     }
