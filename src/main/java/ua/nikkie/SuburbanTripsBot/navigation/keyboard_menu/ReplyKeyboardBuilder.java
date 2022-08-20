@@ -20,7 +20,9 @@ public class ReplyKeyboardBuilder {
     }
 
     public ReplyKeyboardMarkup build() {
-        return new ReplyKeyboardMarkup(rowsList);
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup(rowsList);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        return replyKeyboardMarkup;
     }
 
     public ReplyKeyboardBuilder addRow(KeyboardButton... buttons) {
