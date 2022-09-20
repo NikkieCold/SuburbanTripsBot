@@ -3,8 +3,8 @@ package ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.*;
 
 public enum KeyboardButton {
-    NOT_COMMAND(
-            null, null),
+//    NOT_COMMAND(
+//            null, null),
     START(
             START_MENU, "/start"),
 

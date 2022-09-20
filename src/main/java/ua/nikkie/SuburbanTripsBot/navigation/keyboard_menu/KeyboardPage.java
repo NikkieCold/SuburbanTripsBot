@@ -32,17 +32,17 @@ public enum KeyboardPage {
         }
     },
 
-    NOT_COMMAND {
-        @Override
-        String getText() {
-            return "Обери команду з меню! \nАбо напиши /start";
-        }
-
-        @Override
-        ReplyKeyboard getReplyMarkup() {
-            return null;
-        }
-    },
+//    NOT_COMMAND {
+//        @Override
+//        String getText() {
+//            return "Обери команду з меню! \nАбо напиши /start";
+//        }
+//
+//        @Override
+//        ReplyKeyboard getReplyMarkup() {
+//            return null;
+//        }
+//    },
 
     START_MENU {
         @Override

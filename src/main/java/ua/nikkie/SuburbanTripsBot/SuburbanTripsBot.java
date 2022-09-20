@@ -27,7 +27,6 @@ public class SuburbanTripsBot extends TelegramLongPollingBot {
         SpringApplication.run(SuburbanTripsBot.class, args);
     }
 
-    @SneakyThrows
     @Override
     public void onUpdateReceived(Update update) {
         updateProcessor.process(this, update);

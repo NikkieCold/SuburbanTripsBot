@@ -1,11 +1,11 @@
 package ua.nikkie.SuburbanTripsBot.navigation.parsing;
 
 import org.telegram.telegrambots.meta.api.objects.Message;
+import ua.nikkie.SuburbanTripsBot.exceptions.NotParsableMessage;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 import static java.util.Objects.nonNull;
 
@@ -13,7 +13,7 @@ public class ParsedMessage {
     private final KeyboardPage targetPage;
     private final KeyboardButton calledButton;
 
-    public ParsedMessage(Message message) {
+    public ParsedMessage(Message message) throws NotParsableMessage {
         targetPage = parseTargetPage(message);
         calledButton = parseCalledButton(message);
     }
@@ -26,19 +26,22 @@ public class ParsedMessage {
         return calledButton;
     }
 
-    private KeyboardPage parseTargetPage(Message message) {
+    private KeyboardPage parseTargetPage(Message message) throws NotParsableMessage {
         return Arrays.stream(KeyboardButton.values())
                 .filter(button -> nonNull(button.getButtonText()))
                 .filter(button -> button.getButtonText().equals(message.getText()))
                 .map(KeyboardButton::getTargetPage)
                 .findAny()
-                .orElse(KeyboardPage.NOT_COMMAND);
+                .orElseThrow(NotParsableMessage::new);
+//                .orElse(KeyboardPage.NOT_COMMAND);
     }
 
-    private KeyboardButton parseCalledButton(Message message) {
+    private KeyboardButton parseCalledButton(Message message) throws NotParsableMessage {
         return Arrays.stream(KeyboardButton.values())
                 .filter(button -> nonNull(button.getButtonText()))
                 .filter(button -> button.getButtonText().equals(message.getText()))
-                .findAny().orElse(KeyboardButton.NOT_COMMAND);
+                .findAny()
+                .orElseThrow(NotParsableMessage::new);
+//                .orElse(KeyboardButton.NOT_COMMAND);
     }
 }
