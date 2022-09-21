@@ -37,10 +37,7 @@ public class UpdateProcessor {
             parsedMessage = new ParsedMessage(message);
         } catch (NotParsableMessage e) {
             LOGGER.debug("Can't parse message with text: {}", message.getText(), e);
-            sender.execute(SendMessage.builder()
-                    .chatId(message.getChatId().toString())
-                    .text(String.format(NOT_COMMAND_MESSAGE_FORMAT, message.getFrom().getFirstName()))
-                    .build());
+            sender.execute(buildNotCommandMessage(message));
             return;
         }
 
@@ -57,5 +54,12 @@ public class UpdateProcessor {
     @SneakyThrows
     private void handleCallback(DefaultAbsSender sender, CallbackQuery callbackQuery) {
 
+    }
+
+    private SendMessage buildNotCommandMessage(Message message) {
+        return SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .text(String.format(NOT_COMMAND_MESSAGE_FORMAT, message.getFrom().getFirstName()))
+                .build();
     }
 }

@@ -7,6 +7,7 @@ import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton;
 
 import java.util.Arrays;
 
+import static java.util.Objects.nonNull;
 import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineButton.CONTACT_LINK;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.START_CONTACT;
 
@@ -37,6 +38,7 @@ public enum InlineMessage {
 
     public static SendMessage getInitInlineResponse(Message message, KeyboardButton calledButton) {
         return Arrays.stream(values())
+                .filter(inlineMessage -> nonNull(inlineMessage.callButton))
                 .filter(inlineMessage -> inlineMessage.callButton == calledButton)
                 .map(inlineMessage -> inlineMessage.getResponse(message))
                 .findAny().orElseThrow(RuntimeException::new);
