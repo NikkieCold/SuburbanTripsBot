@@ -12,6 +12,7 @@ import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineButton.CON
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.START_CONTACT;
 
 public enum InlineMessage {
+
     CONTACT(START_CONTACT) {
         @Override
         String getText() {
@@ -36,12 +37,12 @@ public enum InlineMessage {
         this.callButton = callButton;
     }
 
-    public static SendMessage getInitInlineResponse(Message message, KeyboardButton calledButton) {
+    public static SendMessage getInlineResponseWithButton(Message message, KeyboardButton calledButton) {
         return Arrays.stream(values())
                 .filter(inlineMessage -> nonNull(inlineMessage.callButton))
                 .filter(inlineMessage -> inlineMessage.callButton == calledButton)
                 .map(inlineMessage -> inlineMessage.getResponse(message))
-                .findAny().orElseThrow(RuntimeException::new);
+                .findAny().orElseThrow(IllegalArgumentException::new);
 
     }
 

@@ -10,6 +10,7 @@ import java.util.Arrays;
 import static java.util.Objects.nonNull;
 
 public class ParsedMessage {
+
     private final KeyboardPage targetPage;
     private final KeyboardButton calledButton;
 

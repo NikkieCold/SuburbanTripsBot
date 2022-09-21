@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class InlineKeyboardBuilder {
+
     private final List<List<InlineKeyboardButton>> rowsList = new ArrayList<>();
 
     private InlineKeyboardBuilder() {

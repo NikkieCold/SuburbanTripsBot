@@ -20,6 +20,7 @@ import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.START_PASSENGER;
 
 public enum KeyboardPage {
+
     INLINE_KEYBOARD_MESSAGE {
         @Override
         String getText() {

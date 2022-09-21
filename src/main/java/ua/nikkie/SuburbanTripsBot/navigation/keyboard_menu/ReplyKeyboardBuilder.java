@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ReplyKeyboardBuilder {
+
     private final List<KeyboardRow> rowsList = new ArrayList<>();
 
     private ReplyKeyboardBuilder() {
