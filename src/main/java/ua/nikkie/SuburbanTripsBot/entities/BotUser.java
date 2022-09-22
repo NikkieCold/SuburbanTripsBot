@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.Hibernate;
+import ua.nikkie.SuburbanTripsBot.entities.enums.BotUserRegistrationStage;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage;
 
 import javax.persistence.*;
@@ -31,7 +32,10 @@ public class BotUser {
     @Enumerated(EnumType.STRING)
     KeyboardPage page;
     String role;
-    String registrationStage;
+    @Enumerated(EnumType.STRING)
+    BotUserRegistrationStage registrationStage = BotUserRegistrationStage.NOT_REGISTERED;
+    @Enumerated(EnumType.STRING)
+    KeyboardPage registrationCalledPage;
     String name;
     String phoneNumber;
     String carModel;
@@ -45,13 +49,14 @@ public class BotUser {
     @Override
     public String toString() {
         return "BotUser{" +
-                "id=" + userId +
+                "userId=" + userId +
                 ", chatId=" + chatId +
-                ", currentPage='" + page + '\'' +
+                ", page=" + page +
+                ", role='" + role + '\'' +
+                ", registrationStage=" + registrationStage +
+                ", registrationCalledPage=" + registrationCalledPage +
                 ", name='" + name + '\'' +
-                ", status='" + role + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
-                ", profileStage='" + registrationStage + '\'' +
                 ", carModel='" + carModel + '\'' +
                 ", seatsNumber='" + seatsNumber + '\'' +
                 ", carPhoto='" + carPhoto + '\'' +

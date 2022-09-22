@@ -11,12 +11,16 @@ import static java.util.Objects.nonNull;
 
 public class ParsedMessage {
 
-    private final KeyboardPage targetPage;
+    private KeyboardPage targetPage;
     private final KeyboardButton calledButton;
 
     public ParsedMessage(Message message) throws NotParsableMessage {
         targetPage = parseTargetPage(message);
         calledButton = parseCalledButton(message);
+    }
+
+    public void setTargetPage(KeyboardPage targetPage) {
+        this.targetPage = targetPage;
     }
 
     public KeyboardPage getTargetPage() {
@@ -34,7 +38,6 @@ public class ParsedMessage {
                 .map(KeyboardButton::getTargetPage)
                 .findAny()
                 .orElseThrow(NotParsableMessage::new);
-//                .orElse(KeyboardPage.NOT_COMMAND);
     }
 
     private KeyboardButton parseCalledButton(Message message) throws NotParsableMessage {
@@ -43,6 +46,5 @@ public class ParsedMessage {
                 .filter(button -> button.getButtonText().equals(message.getText()))
                 .findAny()
                 .orElseThrow(NotParsableMessage::new);
-//                .orElse(KeyboardButton.NOT_COMMAND);
     }
 }
