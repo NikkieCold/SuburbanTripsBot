@@ -4,8 +4,6 @@ import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.*
 
 public enum KeyboardButton {
 
-//    NOT_COMMAND(
-//            null, null),
     START(
             START_MENU, "/start"),
 
@@ -25,9 +23,9 @@ public enum KeyboardButton {
     DRIVER_TRIPS(
             null, "\uD83D\uDCAC Мої поїздки"),
     DRIVER_PROFILE(
-            null, "Мій профіль водія"),
+            DRIVER_PROFILE_MENU, "Мій профіль водія"),
     DRIVER_TO_PASSENGER(
-            null, "Режим пасажира"),
+            PASSENGER_MENU, "Режим пасажира"),
 
     PASSENGER_ACTIVE(
             null, "\uD83D\uDCCB Розміщені поїздки від водіїв"),
@@ -38,7 +36,7 @@ public enum KeyboardButton {
     PASSENGER_PROFILE(
             null, "Мій профіль пасажира"),
     PASSENGER_TO_DRIVER(
-            null, "Режим водія");
+            DRIVER_MENU, "Режим водія");
 
     private final KeyboardPage targetPage;
     private final String buttonText;

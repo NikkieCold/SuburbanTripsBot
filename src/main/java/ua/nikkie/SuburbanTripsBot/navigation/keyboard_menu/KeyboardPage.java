@@ -3,56 +3,32 @@ package ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_ACTIVE;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_CREATE;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_PROFILE;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TO_PASSENGER;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TRIPS;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.PASSENGER_ACTIVE;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.PASSENGER_CREATE;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.PASSENGER_PROFILE;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.PASSENGER_REQUESTS;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.PASSENGER_TO_DRIVER;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.START_CONTACT;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.START_DRIVER;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.START_INFO;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.START_PASSENGER;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.*;
 
 public enum KeyboardPage {
 
     INLINE_KEYBOARD_MESSAGE {
         @Override
-        String getText() {
+        public String getText() {
             return null;
         }
 
         @Override
-        ReplyKeyboard getReplyMarkup() {
+        public ReplyKeyboard getReplyMarkup() {
             return null;
         }
     },
 
-//    NOT_COMMAND {
-//        @Override
-//        String getText() {
-//            return "Обери команду з меню! \nАбо напиши /start";
-//        }
-//
-//        @Override
-//        ReplyKeyboard getReplyMarkup() {
-//            return null;
-//        }
-//    },
-
     START_MENU {
         @Override
-        String getText() {
+        public String getText() {
             return "Вітаю! Вкажи хто ти:";
         }
 
         @Override
-        ReplyKeyboard getReplyMarkup() {
+        public ReplyKeyboard getReplyMarkup() {
             return ReplyKeyboardBuilder.builder()
                     .addRow(START_DRIVER, START_PASSENGER)
                     .addRow(START_CONTACT)
@@ -63,12 +39,12 @@ public enum KeyboardPage {
 
     DRIVER_MENU {
         @Override
-        String getText() {
+        public String getText() {
             return "Ти у головному меню! \nОбери наступну дію:";
         }
 
         @Override
-        ReplyKeyboard getReplyMarkup() {
+        public ReplyKeyboard getReplyMarkup() {
             return ReplyKeyboardBuilder.builder()
                     .addRow(DRIVER_ACTIVE)
                     .addRow(DRIVER_CREATE, DRIVER_TRIPS)
@@ -78,14 +54,87 @@ public enum KeyboardPage {
         }
     },
 
+    DRIVER_NAME_SPECIFYING {
+        @Override
+        public String getText() {
+            return "Для початку роботи введи ім'я, яке буде видно іншим користувачам:";
+        }
+
+        @Override
+        public ReplyKeyboard getReplyMarkup() {
+            return REPLY_KEYBOARD_REMOVE;
+        }
+    },
+
+    DRIVER_PHONE_NUMBER_SPECIFYING {
+        @Override
+        public String getText() {
+            return "Напиши актуальний номер телефону для зв'язку";
+        }
+
+        @Override
+        public ReplyKeyboard getReplyMarkup() {
+            return REPLY_KEYBOARD_REMOVE;
+        }
+    },
+
+    DRIVER_CAR_MODEL_SPECIFYING {
+        @Override
+        public String getText() {
+            return "Напиши марку та модель свого авто:";
+        }
+
+        @Override
+        public ReplyKeyboard getReplyMarkup() {
+            return REPLY_KEYBOARD_REMOVE;
+        }
+    },
+
+    DRIVER_SEATS_NUMBER_SPECIFYING {
+        @Override
+        public String getText() {
+            return "Вкажи кількість вільних місць у авто:";
+        }
+
+        @Override
+        public ReplyKeyboard getReplyMarkup() {
+            return REPLY_KEYBOARD_REMOVE;
+        }
+    },
+
+    DRIVER_CAR_PHOTO_SPECIFYING {
+        @Override
+        public String getText() {
+            return "Відправ фото свого автомобіля, яке буде відображится пасажирам:";
+        }
+
+        @Override
+        public ReplyKeyboard getReplyMarkup() {
+            return REPLY_KEYBOARD_REMOVE;
+        }
+    },
+
+    DRIVER_PROFILE_MENU {
+        //TODO
+        @Override
+        public String getText() {
+            return "TEST";
+        }
+
+        @Override
+        public ReplyKeyboard getReplyMarkup() {
+            return REPLY_KEYBOARD_REMOVE;
+        }
+    },
+
     PASSENGER_MENU {
         @Override
-        String getText() {
+        public String getText() {
             return "Ти у головному меню! \nОбери наступну дію:";
         }
 
         @Override
-        ReplyKeyboard getReplyMarkup() {
+        public ReplyKeyboard getReplyMarkup() {
             return ReplyKeyboardBuilder.builder()
                     .addRow(PASSENGER_ACTIVE)
                     .addRow(PASSENGER_CREATE, PASSENGER_REQUESTS)
@@ -95,6 +144,8 @@ public enum KeyboardPage {
         }
     };
 
+    private static final ReplyKeyboard REPLY_KEYBOARD_REMOVE = new ReplyKeyboardRemove(true);
+
     public SendMessage getResponse(Message message) {
         return SendMessage.builder()
                 .chatId(message.getChatId().toString())
@@ -103,7 +154,15 @@ public enum KeyboardPage {
                 .build();
     }
 
-    abstract String getText();
+    public SendMessage getResponseWithCustomText(Message message, String text) {
+        return SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .replyMarkup(getReplyMarkup())
+                .text(text)
+                .build();
+    }
 
-    abstract ReplyKeyboard getReplyMarkup();
+    public abstract String getText();
+
+    public abstract ReplyKeyboard getReplyMarkup();
 }
