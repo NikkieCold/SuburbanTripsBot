@@ -20,7 +20,9 @@ import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage;
 import ua.nikkie.SuburbanTripsBot.navigation.parsing.ParsedMessage;
 import ua.nikkie.SuburbanTripsBot.util.SendMethodClass;
 
+import static java.util.Objects.nonNull;
 import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineMessage.getInlineResponseWithButton;
+import static ua.nikkie.SuburbanTripsBot.util.BotUtils.nonNulls;
 
 @Slf4j
 @Component
@@ -33,14 +35,14 @@ public class MessageHandler {
     }
 
     public void handle(DefaultAbsSender sender, Message message) throws TelegramApiException {
-        if (isWaitingForTextPage(message)) {
-            try {
+        try {
+            if (isWaitingForUserInfo(message)) {
                 sendResponse(sender, handleUserTextMessage(message));
-            } catch (UnexpectedPage | UnexpectedSendMethod e) {
-                //TODO unexpected page with other text from user
-                throw new RuntimeException();
+                return;
             }
-            return;
+        } catch (UnexpectedPage | UnexpectedSendMethod e) {
+            //TODO
+            throw new RuntimeException();
         }
 
         try {
@@ -58,7 +60,7 @@ public class MessageHandler {
     private void sendResponse(DefaultAbsSender sender, PartialBotApiMethod<Message> response)
         throws TelegramApiException, UnexpectedSendMethod {
 
-        switch (SendMethodClass.valueOf(response.getClass().getSimpleName())) {
+        switch (SendMethodClass.get(response)) {
             case SendMessage:
                 sender.execute((SendMessage) response);
                 break;
@@ -136,14 +138,24 @@ public class MessageHandler {
         return parsedMessage.getTargetPage().getResponse(message);
     }
 
-    private boolean isWaitingForTextPage(Message message) {
+    private boolean isWaitingForUserInfo(Message message) throws UnexpectedSendMethod {
         BotUser user = botUserService.getBotUser(message);
-        //TODO NPE if getReplyMarkup is null
-        try {
-            SendMessage sendMessage = (SendMessage) user.getPage().getResponse(message);
-            return sendMessage.getReplyMarkup().getClass() == ReplyKeyboardRemove.class;
-        } catch (NullPointerException e) {
+
+        if (!nonNulls(user.getPage(), user.getPage().getResponse(message))) {
             return false;
+        }
+
+        PartialBotApiMethod<Message> response = user.getPage().getResponse(message);
+
+        switch (SendMethodClass.get(response)) {
+            case SendMessage:
+                SendMessage sm = (SendMessage) response;
+                return nonNull(sm.getReplyMarkup()) && sm.getReplyMarkup().getClass() == ReplyKeyboardRemove.class;
+            case SendPhoto:
+                SendPhoto sp = (SendPhoto) response;
+                return nonNull(sp.getReplyMarkup()) && sp.getReplyMarkup().getClass() == ReplyKeyboardRemove.class;
+            default:
+                throw new UnexpectedSendMethod();
         }
     }
 
@@ -182,6 +194,7 @@ public class MessageHandler {
                 nextPage = KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING;
                 break;
             case DRIVER_CAR_PHOTO_SPECIFYING:
+                //TODO
                 botUserService.setCarPhoto(message);
                 botUserService.setRegistrationStage(message, BotUserRegistrationStage.CAR_PHOTO);
                 nextPage = botUserService.getBotUser(message).getRegistrationCalledPage();
