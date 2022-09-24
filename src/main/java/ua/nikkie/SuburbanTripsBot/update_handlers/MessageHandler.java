@@ -23,7 +23,6 @@ import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineMessage.ge
 @Component
 public class MessageHandler {
 
-
     BotUserService botUserService;
 
     public MessageHandler(BotUserService botUserService) {
@@ -133,7 +132,7 @@ public class MessageHandler {
         switch (page) {
             case DRIVER_NAME_SPECIFYING:
                 if (message.getText().length() > 50) {
-                    return page.getResponseWithCustomText(message, page.getText()
+                    return page.getResponseWithCustomText(message, page.getText(message)
                             .concat("\nІм'я не має бути довшим за 50 символів!"));
                 }
                 botUserService.setName(message);

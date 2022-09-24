@@ -1,9 +1,13 @@
 package ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu;
 
+import javax.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+import ua.nikkie.SuburbanTripsBot.entities.services.BotUserService;
 
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.*;
 
@@ -11,7 +15,7 @@ public enum KeyboardPage {
 
     INLINE_KEYBOARD_MESSAGE {
         @Override
-        public String getText() {
+        public String getText(Message message) {
             return null;
         }
 
@@ -23,7 +27,7 @@ public enum KeyboardPage {
 
     START_MENU {
         @Override
-        public String getText() {
+        public String getText(Message message) {
             return "Вітаю! Вкажи хто ти:";
         }
 
@@ -39,7 +43,7 @@ public enum KeyboardPage {
 
     DRIVER_MENU {
         @Override
-        public String getText() {
+        public String getText(Message message) {
             return "Ти у головному меню! \nОбери наступну дію:";
         }
 
@@ -56,7 +60,7 @@ public enum KeyboardPage {
 
     DRIVER_NAME_SPECIFYING {
         @Override
-        public String getText() {
+        public String getText(Message message) {
             return "Для початку роботи введи ім'я, яке буде видно іншим користувачам:";
         }
 
@@ -68,7 +72,7 @@ public enum KeyboardPage {
 
     DRIVER_PHONE_NUMBER_SPECIFYING {
         @Override
-        public String getText() {
+        public String getText(Message message) {
             return "Напиши актуальний номер телефону для зв'язку";
         }
 
@@ -80,7 +84,7 @@ public enum KeyboardPage {
 
     DRIVER_CAR_MODEL_SPECIFYING {
         @Override
-        public String getText() {
+        public String getText(Message message) {
             return "Напиши марку та модель свого авто:";
         }
 
@@ -92,7 +96,7 @@ public enum KeyboardPage {
 
     DRIVER_SEATS_NUMBER_SPECIFYING {
         @Override
-        public String getText() {
+        public String getText(Message message) {
             return "Вкажи кількість вільних місць у авто:";
         }
 
@@ -104,7 +108,7 @@ public enum KeyboardPage {
 
     DRIVER_CAR_PHOTO_SPECIFYING {
         @Override
-        public String getText() {
+        public String getText(Message message) {
             return "Відправ фото свого автомобіля, яке буде відображится пасажирам:";
         }
 
@@ -117,8 +121,8 @@ public enum KeyboardPage {
     DRIVER_PROFILE_MENU {
         //TODO
         @Override
-        public String getText() {
-            return "TEST";
+        public String getText(Message message) {
+            return botUserService.getBotUser(message).getName();
         }
 
         @Override
@@ -129,7 +133,7 @@ public enum KeyboardPage {
 
     PASSENGER_MENU {
         @Override
-        public String getText() {
+        public String getText(Message message) {
             return "Ти у головному меню! \nОбери наступну дію:";
         }
 
@@ -146,11 +150,13 @@ public enum KeyboardPage {
 
     private static final ReplyKeyboard REPLY_KEYBOARD_REMOVE = new ReplyKeyboardRemove(true);
 
+    public BotUserService botUserService;
+
     public SendMessage getResponse(Message message) {
         return SendMessage.builder()
                 .chatId(message.getChatId().toString())
                 .replyMarkup(getReplyMarkup())
-                .text(getText())
+                .text(getText(message))
                 .build();
     }
 
@@ -162,7 +168,24 @@ public enum KeyboardPage {
                 .build();
     }
 
-    public abstract String getText();
+    private void setBotUserService(BotUserService botUserService) {
+        this.botUserService = botUserService;
+    }
+
+    public abstract String getText(Message message);
 
     public abstract ReplyKeyboard getReplyMarkup();
+
+    @Component
+    private static class BotUserServiceComponent {
+        @Autowired
+        private BotUserService botUserService;
+
+        @PostConstruct
+        public void postConstruct() {
+            for (KeyboardPage kp : KeyboardPage.values()) {
+                kp.setBotUserService(botUserService);
+            }
+        }
+    }
 }
