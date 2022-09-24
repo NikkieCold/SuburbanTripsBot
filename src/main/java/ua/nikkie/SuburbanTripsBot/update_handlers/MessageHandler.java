@@ -3,7 +3,9 @@ package ua.nikkie.SuburbanTripsBot.update_handlers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultAbsSender;
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -12,11 +14,12 @@ import ua.nikkie.SuburbanTripsBot.entities.enums.BotUserRegistrationStage;
 import ua.nikkie.SuburbanTripsBot.entities.services.BotUserService;
 import ua.nikkie.SuburbanTripsBot.exceptions.NotParsableMessage;
 import ua.nikkie.SuburbanTripsBot.exceptions.UnexpectedPage;
+import ua.nikkie.SuburbanTripsBot.exceptions.UnexpectedSendMethod;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage;
 import ua.nikkie.SuburbanTripsBot.navigation.parsing.ParsedMessage;
+import ua.nikkie.SuburbanTripsBot.util.SendMethodClass;
 
-import static java.util.Objects.nonNull;
 import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineMessage.getInlineResponseWithButton;
 
 @Slf4j
@@ -32,20 +35,39 @@ public class MessageHandler {
     public void handle(DefaultAbsSender sender, Message message) throws TelegramApiException {
         if (isWaitingForTextPage(message)) {
             try {
-                sender.execute(handleUserTextMessage(message));
-            } catch (UnexpectedPage e) {
+                sendResponse(sender, handleUserTextMessage(message));
+            } catch (UnexpectedPage | UnexpectedSendMethod e) {
+                //TODO unexpected page with other text from user
                 throw new RuntimeException();
             }
             return;
         }
 
         try {
-            sender.execute(getResponseByCalledButton(new ParsedMessage(message), message));
+            sendResponse(sender, getResponseByCalledButton(new ParsedMessage(message), message));
         } catch (NotParsableMessage e) {
             log.debug("Can't parse message with text: {}", message.getText(), e);
             sender.execute(buildNotCommandMessage(message));
         } catch (NullPointerException e) {
             sender.execute(buildPageNotCreatedMessage(message));
+        } catch (UnexpectedSendMethod e) {
+            throw new RuntimeException();
+        }
+    }
+
+    private void sendResponse(DefaultAbsSender sender, PartialBotApiMethod<Message> response)
+        throws TelegramApiException, UnexpectedSendMethod {
+
+        switch (SendMethodClass.valueOf(response.getClass().getSimpleName())) {
+            case SendMessage:
+                sender.execute((SendMessage) response);
+                break;
+            case SendPhoto:
+                sender.execute((SendPhoto) response);
+                break;
+            default:
+                //TODO
+                throw new UnexpectedSendMethod();
         }
     }
 
@@ -63,9 +85,9 @@ public class MessageHandler {
                 .build();
     }
 
-    private SendMessage getResponseByCalledButton(ParsedMessage parsedMessage, Message message) {
+    private PartialBotApiMethod<Message> getResponseByCalledButton(ParsedMessage parsedMessage, Message message) {
         KeyboardButton button = parsedMessage.getCalledButton();
-        SendMessage response;
+        PartialBotApiMethod<Message> response;
 
         switch (button) {
             case START_CONTACT:
@@ -84,7 +106,7 @@ public class MessageHandler {
         return response;
     }
 
-    private SendMessage getDriverProfileAccessPage(Message message, ParsedMessage parsedMessage) {
+    private PartialBotApiMethod<Message> getDriverProfileAccessPage(Message message, ParsedMessage parsedMessage) {
         BotUserRegistrationStage registrationStage = botUserService.getBotUser(message).getRegistrationStage();
 
         if (registrationStage == BotUserRegistrationStage.CAR_PHOTO) {
@@ -116,11 +138,16 @@ public class MessageHandler {
 
     private boolean isWaitingForTextPage(Message message) {
         BotUser user = botUserService.getBotUser(message);
-        return nonNull(user.getPage()) && user.getPage().getResponse(message).getReplyMarkup()
-                .getClass() == ReplyKeyboardRemove.class;
+        //TODO NPE if getReplyMarkup is null
+        try {
+            SendMessage sendMessage = (SendMessage) user.getPage().getResponse(message);
+            return sendMessage.getReplyMarkup().getClass() == ReplyKeyboardRemove.class;
+        } catch (NullPointerException e) {
+            return false;
+        }
     }
 
-    private SendMessage handleUserTextMessage(Message message) throws UnexpectedPage {
+    private PartialBotApiMethod<Message> handleUserTextMessage(Message message) throws UnexpectedPage {
         if (message.getText().equals(KeyboardButton.START.getButtonText())) {
             botUserService.setPage(message, KeyboardButton.START.getTargetPage());
             return KeyboardButton.START.getTargetPage().getResponse(message);

@@ -3,10 +3,14 @@ package ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+import ua.nikkie.SuburbanTripsBot.entities.BotUser;
 import ua.nikkie.SuburbanTripsBot.entities.services.BotUserService;
 
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.*;
@@ -119,15 +123,31 @@ public enum KeyboardPage {
     },
 
     DRIVER_PROFILE_MENU {
-        //TODO
         @Override
         public String getText(Message message) {
-            return botUserService.getBotUser(message).getName();
+            BotUser user = botUserService.getBotUser(message);
+            return "__*Ваш профіль в SuburbanTripsBot*__\n"
+                + "\n_Ім'я:_ `" + user.getName()
+                + "`\n_Номер телефону:_ `" + user.getPhoneNumber()
+                + "`\nМодель авто: `" + user.getCarModel()
+                + "`\nКількість вільних місць: `" + user.getSeatsNumber()
+                + "`\n\nВи можете змінити дані профілю скориставшись кнопками внизу"
+                + "[⠀](https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg)";
         }
 
         @Override
         public ReplyKeyboard getReplyMarkup() {
-            return REPLY_KEYBOARD_REMOVE;
+            return null;
+        }
+
+        @Override
+        public PartialBotApiMethod<Message> getResponse(Message message) {
+            return SendPhoto.builder()
+                .chatId(message.getChatId().toString())
+                .photo(new InputFile(botUserService.getBotUser(message).getCarPhoto()))
+                .caption(getText(message))
+                .replyMarkup(getReplyMarkup())
+                .parseMode(MARKDOWN_V2).build();
         }
     },
 
@@ -148,11 +168,12 @@ public enum KeyboardPage {
         }
     };
 
+    private static final String MARKDOWN_V2 = "MarkdownV2";
     private static final ReplyKeyboard REPLY_KEYBOARD_REMOVE = new ReplyKeyboardRemove(true);
 
     public BotUserService botUserService;
 
-    public SendMessage getResponse(Message message) {
+    public PartialBotApiMethod<Message> getResponse(Message message) {
         return SendMessage.builder()
                 .chatId(message.getChatId().toString())
                 .replyMarkup(getReplyMarkup())
