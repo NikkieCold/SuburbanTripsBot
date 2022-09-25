@@ -7,26 +7,22 @@ import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.nikkie.SuburbanTripsBot.entities.BotUser;
 import ua.nikkie.SuburbanTripsBot.entities.enums.BotUserRegistrationStage;
 import ua.nikkie.SuburbanTripsBot.entities.services.BotUserService;
 import ua.nikkie.SuburbanTripsBot.exceptions.NotParsableMessage;
-import ua.nikkie.SuburbanTripsBot.exceptions.UnexpectedPage;
+import ua.nikkie.SuburbanTripsBot.exceptions.UnexpectedInput;
 import ua.nikkie.SuburbanTripsBot.exceptions.UnexpectedSendMethod;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage;
 import ua.nikkie.SuburbanTripsBot.navigation.parsing.ParsedMessage;
 import ua.nikkie.SuburbanTripsBot.util.SendMethodClass;
 
-import java.util.List;
-
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineMessage.getInlineResponseWithButton;
-import static ua.nikkie.SuburbanTripsBot.util.BotUtils.nonNulls;
 
 @Slf4j
 @Component
@@ -40,13 +36,13 @@ public class MessageHandler {
 
     public void handle(DefaultAbsSender sender, Message message) throws TelegramApiException {
         try {
-            if (isWaitingForUserInfo(message)) {
-                sendResponse(sender, handleUserTextMessage(message));
+            if (isWaitingForUserInput(message)) {
+                sendResponse(sender, handleUserInputMessage(message));
                 return;
             }
-        } catch (UnexpectedPage | UnexpectedSendMethod e) {
-            //TODO
-            throw new RuntimeException();
+        } catch (UnexpectedInput e) {
+            sendResponse(sender, botUserService.getBotUser(message).getPage().getResponse(message));
+            return;
         }
 
         try {
@@ -56,13 +52,11 @@ public class MessageHandler {
             sender.execute(buildNotCommandMessage(message));
         } catch (NullPointerException e) {
             sender.execute(buildPageNotCreatedMessage(message));
-        } catch (UnexpectedSendMethod e) {
-            throw new RuntimeException();
         }
     }
 
     private void sendResponse(DefaultAbsSender sender, PartialBotApiMethod<Message> response)
-        throws TelegramApiException, UnexpectedSendMethod {
+        throws TelegramApiException {
 
         switch (SendMethodClass.get(response)) {
             case SendMessage:
@@ -72,7 +66,7 @@ public class MessageHandler {
                 sender.execute((SendPhoto) response);
                 break;
             default:
-                throw new UnexpectedSendMethod();
+                throw new UnexpectedSendMethod(response);
         }
     }
 
@@ -141,7 +135,7 @@ public class MessageHandler {
         return parsedMessage.getTargetPage().getResponse(message);
     }
 
-    private boolean isWaitingForUserInfo(Message message) throws UnexpectedSendMethod {
+    private boolean isWaitingForUserInput(Message message) {
         BotUser user = botUserService.getBotUser(message);
 
         if (isNull(user.getPage()) || isNull(user.getPage().getResponse(message))) {
@@ -158,12 +152,12 @@ public class MessageHandler {
                 SendPhoto sp = (SendPhoto) response;
                 return nonNull(sp.getReplyMarkup()) && sp.getReplyMarkup().getClass() == ReplyKeyboardRemove.class;
             default:
-                throw new UnexpectedSendMethod();
+                throw new UnexpectedSendMethod(response);
         }
     }
 
-    private PartialBotApiMethod<Message> handleUserTextMessage(Message message) throws UnexpectedPage {
-        if (message.getText().equals(KeyboardButton.START.getButtonText())) {
+    private PartialBotApiMethod<Message> handleUserInputMessage(Message message) throws UnexpectedInput {
+        if (message.hasText() && message.getText().equals(KeyboardButton.START.getButtonText())) {
             botUserService.setPage(message, KeyboardButton.START.getTargetPage());
             return KeyboardButton.START.getTargetPage().getResponse(message);
         }
@@ -171,38 +165,44 @@ public class MessageHandler {
         KeyboardPage page = botUserService.getBotUser(message).getPage();
         KeyboardPage nextPage;
 
-        switch (page) {
-            case DRIVER_NAME_SPECIFYING:
-                if (message.getText().length() > 50) {
-                    return page.getResponseWithCustomText(message, page.getText(message)
+        if (message.hasText()) {
+            switch (page) {
+                case DRIVER_NAME_SPECIFYING:
+                    if (message.getText().length() > 50) {
+                        return page.getResponseWithCustomText(message, page.getText(message)
                             .concat("\nІм'я не має бути довшим за 50 символів!"));
-                }
-                botUserService.setName(message);
-                botUserService.setRegistrationStage(message, BotUserRegistrationStage.NAME);
-                nextPage = KeyboardPage.DRIVER_PHONE_NUMBER_SPECIFYING;
-                break;
-            case DRIVER_PHONE_NUMBER_SPECIFYING:
-                botUserService.setPhoneNumber(message);
-                botUserService.setRegistrationStage(message, BotUserRegistrationStage.PHONE_NUMBER);
-                nextPage = KeyboardPage.DRIVER_CAR_MODEL_SPECIFYING;
-                break;
-            case DRIVER_CAR_MODEL_SPECIFYING:
-                botUserService.setCarModel(message);
-                botUserService.setRegistrationStage(message, BotUserRegistrationStage.CAR_MODEL);
-                nextPage = KeyboardPage.DRIVER_SEATS_NUMBER_SPECIFYING;
-                break;
-            case DRIVER_SEATS_NUMBER_SPECIFYING:
-                botUserService.setSeatsNumber(message);
-                botUserService.setRegistrationStage(message, BotUserRegistrationStage.SEATS_NUMBER);
-                nextPage = KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING;
-                break;
-            case DRIVER_CAR_PHOTO_SPECIFYING:
-                botUserService.setCarPhoto(message);
-                botUserService.setRegistrationStage(message, BotUserRegistrationStage.CAR_PHOTO);
-                nextPage = botUserService.getBotUser(message).getRegistrationCalledPage();
-                break;
-            default:
-                throw new UnexpectedPage();
+                    }
+                    botUserService.setName(message);
+                    botUserService.setRegistrationStage(message, BotUserRegistrationStage.NAME);
+                    nextPage = KeyboardPage.DRIVER_PHONE_NUMBER_SPECIFYING;
+                    break;
+                case DRIVER_PHONE_NUMBER_SPECIFYING:
+                    botUserService.setPhoneNumber(message);
+                    botUserService.setRegistrationStage(message, BotUserRegistrationStage.PHONE_NUMBER);
+                    nextPage = KeyboardPage.DRIVER_CAR_MODEL_SPECIFYING;
+                    break;
+                case DRIVER_CAR_MODEL_SPECIFYING:
+                    botUserService.setCarModel(message);
+                    botUserService.setRegistrationStage(message, BotUserRegistrationStage.CAR_MODEL);
+                    nextPage = KeyboardPage.DRIVER_SEATS_NUMBER_SPECIFYING;
+                    break;
+                case DRIVER_SEATS_NUMBER_SPECIFYING:
+                    botUserService.setSeatsNumber(message);
+                    botUserService.setRegistrationStage(message, BotUserRegistrationStage.SEATS_NUMBER);
+                    nextPage = KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING;
+                    break;
+                default:
+                    throw new UnexpectedInput();
+            }
+        } else if (message.hasPhoto()) {
+            if (page != KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING) {
+                throw new UnexpectedInput();
+            }
+            botUserService.setCarPhoto(message);
+            botUserService.setRegistrationStage(message, BotUserRegistrationStage.CAR_PHOTO);
+            nextPage = botUserService.getBotUser(message).getRegistrationCalledPage();
+        } else {
+            throw new UnexpectedInput();
         }
 
         botUserService.setPage(message, nextPage);

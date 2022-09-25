@@ -1,4 +1,4 @@
 package ua.nikkie.SuburbanTripsBot.exceptions;
 
-public class UnexpectedPage extends Exception {
+public class UnexpectedInput extends Exception {
 }
