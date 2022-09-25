@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.nikkie.SuburbanTripsBot.entities.BotUser;
@@ -20,6 +21,9 @@ import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage;
 import ua.nikkie.SuburbanTripsBot.navigation.parsing.ParsedMessage;
 import ua.nikkie.SuburbanTripsBot.util.SendMethodClass;
 
+import java.util.List;
+
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineMessage.getInlineResponseWithButton;
 import static ua.nikkie.SuburbanTripsBot.util.BotUtils.nonNulls;
@@ -68,7 +72,6 @@ public class MessageHandler {
                 sender.execute((SendPhoto) response);
                 break;
             default:
-                //TODO
                 throw new UnexpectedSendMethod();
         }
     }
@@ -141,7 +144,7 @@ public class MessageHandler {
     private boolean isWaitingForUserInfo(Message message) throws UnexpectedSendMethod {
         BotUser user = botUserService.getBotUser(message);
 
-        if (!nonNulls(user.getPage(), user.getPage().getResponse(message))) {
+        if (isNull(user.getPage()) || isNull(user.getPage().getResponse(message))) {
             return false;
         }
 
@@ -194,7 +197,6 @@ public class MessageHandler {
                 nextPage = KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING;
                 break;
             case DRIVER_CAR_PHOTO_SPECIFYING:
-                //TODO
                 botUserService.setCarPhoto(message);
                 botUserService.setRegistrationStage(message, BotUserRegistrationStage.CAR_PHOTO);
                 nextPage = botUserService.getBotUser(message).getRegistrationCalledPage();
