@@ -137,7 +137,11 @@ public enum KeyboardPage {
 
         @Override
         public ReplyKeyboard getReplyMarkup() {
-            return null;
+            return ReplyKeyboardBuilder.builder()
+                .addRow(DRIVER_PROFILE_EDIT_NAME, DRIVER_PROFILE_EDIT_PHONE_NUMBER)
+                .addRow(DRIVER_PROFILE_EDIT_CAR_MODEL, DRIVER_PROFILE_EDIT_SEATS_NUMBER)
+                .addRow(DRIVER_PROFILE_BACK, DRIVER_PROFILE_EDIT_CAR_PHOTO)
+                .build();
         }
 
         @Override
