@@ -1,10 +1,14 @@
 package ua.nikkie.SuburbanTripsBot;
 
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+
+import javax.annotation.PostConstruct;
 
 @SpringBootApplication
 public class SuburbanTripsBot extends TelegramLongPollingBot {
@@ -24,6 +28,13 @@ public class SuburbanTripsBot extends TelegramLongPollingBot {
 
     public static void main(String[] args) {
         SpringApplication.run(SuburbanTripsBot.class, args);
+    }
+
+    @PostConstruct @SneakyThrows
+    public void sendStartUpMessage() {
+        execute(SendMessage.builder()
+                .chatId("339893955")
+                .text("Started").build());
     }
 
     @Override
