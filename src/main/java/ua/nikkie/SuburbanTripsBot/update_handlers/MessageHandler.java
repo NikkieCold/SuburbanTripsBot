@@ -142,18 +142,7 @@ public class MessageHandler {
             return false;
         }
 
-        PartialBotApiMethod<Message> response = user.getPage().getResponse(message);
-
-        switch (SendMethodClass.get(response)) {
-            case SendMessage:
-                SendMessage sm = (SendMessage) response;
-                return nonNull(sm.getReplyMarkup()) && sm.getReplyMarkup().getClass() == ReplyKeyboardRemove.class;
-            case SendPhoto:
-                SendPhoto sp = (SendPhoto) response;
-                return nonNull(sp.getReplyMarkup()) && sp.getReplyMarkup().getClass() == ReplyKeyboardRemove.class;
-            default:
-                throw new UnexpectedSendMethod(response);
-        }
+        return user.getPage().isUserInputPage();
     }
 
     private PartialBotApiMethod<Message> handleUserInputMessage(Message message) throws UnexpectedInput {

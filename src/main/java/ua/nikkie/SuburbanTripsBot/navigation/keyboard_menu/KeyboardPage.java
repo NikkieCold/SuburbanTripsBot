@@ -72,6 +72,11 @@ public enum KeyboardPage {
         public ReplyKeyboard getReplyMarkup() {
             return REPLY_KEYBOARD_REMOVE;
         }
+
+        @Override
+        public boolean isUserInputPage() {
+            return true;
+        }
     },
 
     DRIVER_PHONE_NUMBER_SPECIFYING {
@@ -83,6 +88,11 @@ public enum KeyboardPage {
         @Override
         public ReplyKeyboard getReplyMarkup() {
             return REPLY_KEYBOARD_REMOVE;
+        }
+
+        @Override
+        public boolean isUserInputPage() {
+            return true;
         }
     },
 
@@ -96,6 +106,11 @@ public enum KeyboardPage {
         public ReplyKeyboard getReplyMarkup() {
             return REPLY_KEYBOARD_REMOVE;
         }
+
+        @Override
+        public boolean isUserInputPage() {
+            return true;
+        }
     },
 
     DRIVER_SEATS_NUMBER_SPECIFYING {
@@ -108,6 +123,11 @@ public enum KeyboardPage {
         public ReplyKeyboard getReplyMarkup() {
             return REPLY_KEYBOARD_REMOVE;
         }
+
+        @Override
+        public boolean isUserInputPage() {
+            return true;
+        }
     },
 
     DRIVER_CAR_PHOTO_SPECIFYING {
@@ -119,6 +139,11 @@ public enum KeyboardPage {
         @Override
         public ReplyKeyboard getReplyMarkup() {
             return REPLY_KEYBOARD_REMOVE;
+        }
+
+        @Override
+        public boolean isUserInputPage() {
+            return true;
         }
     },
 
@@ -137,7 +162,11 @@ public enum KeyboardPage {
 
         @Override
         public ReplyKeyboard getReplyMarkup() {
-            return null;
+            return ReplyKeyboardBuilder.builder()
+                .addRow(DRIVER_PROFILE_EDIT_NAME, DRIVER_PROFILE_EDIT_PHONE_NUMBER)
+                .addRow(DRIVER_PROFILE_EDIT_CAR_MODEL, DRIVER_PROFILE_EDIT_SEATS_NUMBER)
+                .addRow(DRIVER_PROFILE_BACK, DRIVER_PROFILE_EDIT_CAR_PHOTO)
+                .build();
         }
 
         @Override
@@ -173,6 +202,10 @@ public enum KeyboardPage {
 
     public BotUserService botUserService;
 
+    private void setBotUserService(BotUserService botUserService) {
+        this.botUserService = botUserService;
+    }
+
     public PartialBotApiMethod<Message> getResponse(Message message) {
         return SendMessage.builder()
                 .chatId(message.getChatId().toString())
@@ -189,8 +222,8 @@ public enum KeyboardPage {
                 .build();
     }
 
-    private void setBotUserService(BotUserService botUserService) {
-        this.botUserService = botUserService;
+    public boolean isUserInputPage() {
+        return false;
     }
 
     public abstract String getText(Message message);

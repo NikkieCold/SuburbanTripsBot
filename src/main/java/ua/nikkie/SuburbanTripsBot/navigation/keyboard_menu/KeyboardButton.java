@@ -24,6 +24,20 @@ public enum KeyboardButton {
             null, "\uD83D\uDCAC Мої поїздки"),
     DRIVER_PROFILE(
             DRIVER_PROFILE_MENU, "Мій профіль водія"),
+
+    DRIVER_PROFILE_EDIT_NAME(
+        null, "Змінити ім'я"),
+    DRIVER_PROFILE_EDIT_PHONE_NUMBER(
+        null, "Змінити номер телефону"),
+    DRIVER_PROFILE_EDIT_CAR_MODEL(
+        null, "Змінити марку та модель авто"),
+    DRIVER_PROFILE_EDIT_SEATS_NUMBER(
+        null, "Змінити кількість вільних місць"),
+    DRIVER_PROFILE_EDIT_CAR_PHOTO(
+        null, "Змінити фото автомобіля"),
+    DRIVER_PROFILE_BACK(
+        DRIVER_MENU, "\u2B05 Назад (меню водія)"),
+
     DRIVER_TO_PASSENGER(
             PASSENGER_MENU, "Режим пасажира"),
 
