@@ -1,5 +1,15 @@
 package ua.nikkie.SuburbanTripsBot.entities;
 
+import static lombok.AccessLevel.PRIVATE;
+
+import java.util.Objects;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -7,11 +17,6 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.Hibernate;
 import ua.nikkie.SuburbanTripsBot.entities.enums.BotUserRegistrationStage;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage;
-
-import javax.persistence.*;
-import java.util.Objects;
-
-import static lombok.AccessLevel.PRIVATE;
 
 @Getter
 @Setter

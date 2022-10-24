@@ -1,15 +1,14 @@
 package ua.nikkie.SuburbanTripsBot.navigation.inline_menu;
 
+import static java.util.Objects.nonNull;
+import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineButton.CONTACT_LINK;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.START_CONTACT;
+
+import java.util.Arrays;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton;
-
-import java.util.Arrays;
-
-import static java.util.Objects.nonNull;
-import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineButton.CONTACT_LINK;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.START_CONTACT;
 
 public enum InlineMessage {
 

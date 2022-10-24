@@ -1,54 +1,48 @@
 package ua.nikkie.SuburbanTripsBot;
 
-import lombok.SneakyThrows;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.bots.TelegramWebhookBot;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
-import javax.annotation.PostConstruct;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ua.nikkie.SuburbanTripsBot.config.BotConfiguration;
 
 @SpringBootApplication
-public class SuburbanTripsBot extends TelegramLongPollingBot {
+public class SuburbanTripsBot extends TelegramWebhookBot {
 
-    private final String botUsername;
-    private final String botToken;
+    private final BotConfiguration botConfiguration;
     private final UpdateProcessor updateProcessor;
 
-    public SuburbanTripsBot(
-            @Value("${telegram.api.botUsername}") String botUsername,
-            @Value("${telegram.api.botToken}") String botToken,
-            UpdateProcessor updateProcessor) {
-        this.botUsername = botUsername;
-        this.botToken = botToken;
+    public SuburbanTripsBot(BotConfiguration botConfiguration, UpdateProcessor updateProcessor)
+        throws TelegramApiException {
+        this.botConfiguration = botConfiguration;
         this.updateProcessor = updateProcessor;
+        setWebhook(botConfiguration.getWebhook());
     }
 
     public static void main(String[] args) {
         SpringApplication.run(SuburbanTripsBot.class, args);
     }
 
-    @PostConstruct @SneakyThrows
-    public void sendStartUpMessage() {
-        execute(SendMessage.builder()
-                .chatId("339893955")
-                .text("Started").build());
-    }
-
     @Override
-    public void onUpdateReceived(Update update) {
+    public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
         updateProcessor.process(this, update);
+        return null;
     }
 
     @Override
     public String getBotToken() {
-        return botToken;
+        return botConfiguration.getToken();
     }
 
     @Override
     public String getBotUsername() {
-        return botUsername;
+        return botConfiguration.getUsername();
+    }
+
+    @Override
+    public String getBotPath() {
+        return botConfiguration.getPath();
     }
 }

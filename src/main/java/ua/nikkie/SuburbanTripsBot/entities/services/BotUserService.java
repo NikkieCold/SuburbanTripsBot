@@ -1,5 +1,7 @@
 package ua.nikkie.SuburbanTripsBot.entities.services;
 
+import java.util.List;
+import javax.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
@@ -7,9 +9,6 @@ import ua.nikkie.SuburbanTripsBot.entities.BotUser;
 import ua.nikkie.SuburbanTripsBot.entities.enums.BotUserRegistrationStage;
 import ua.nikkie.SuburbanTripsBot.entities.repositories.BotUserRepository;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage;
-
-import javax.transaction.Transactional;
-import java.util.List;
 
 @Service
 public class BotUserService {

@@ -1,6 +1,10 @@
 package ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu;
 
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.*;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_MENU;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_MENU;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.INLINE_KEYBOARD_MESSAGE;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.PASSENGER_MENU;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.START_MENU;
 
 public enum KeyboardButton {
 

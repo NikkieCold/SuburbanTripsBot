@@ -1,5 +1,8 @@
 package ua.nikkie.SuburbanTripsBot.update_handlers;
 
+import static java.util.Objects.isNull;
+import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineMessage.getInlineResponseWithButton;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultAbsSender;
@@ -7,7 +10,6 @@ import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.nikkie.SuburbanTripsBot.entities.BotUser;
 import ua.nikkie.SuburbanTripsBot.entities.enums.BotUserRegistrationStage;
@@ -19,10 +21,6 @@ import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage;
 import ua.nikkie.SuburbanTripsBot.navigation.parsing.ParsedMessage;
 import ua.nikkie.SuburbanTripsBot.util.SendMethodClass;
-
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineMessage.getInlineResponseWithButton;
 
 @Slf4j
 @Component

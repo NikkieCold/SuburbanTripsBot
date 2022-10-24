@@ -1,13 +1,12 @@
 package ua.nikkie.SuburbanTripsBot.navigation.parsing;
 
+import static java.util.Objects.nonNull;
+
+import java.util.Arrays;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ua.nikkie.SuburbanTripsBot.exceptions.NotParsableMessage;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage;
-
-import java.util.Arrays;
-
-import static java.util.Objects.nonNull;
 
 public class ParsedMessage {
 
