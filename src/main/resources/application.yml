@@ -9,9 +9,6 @@ spring:
 
 server:
   ssl:
-      enabled: true
-      key-store-type: JKS
       key-store: classpath:${KEYSTORE_PATH} #.jks keystore
       key-store-password: ${KEYSTORE_PASSWORD}
-      certificate: classpath:${CERTIFICATE_PATH} #.pem public key
   port: ${SERVER_PORT}

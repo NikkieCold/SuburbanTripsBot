@@ -2,9 +2,7 @@ package ua.nikkie.SuburbanTripsBot.controllers;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ua.nikkie.SuburbanTripsBot.SuburbanTripsBot;
 
@@ -17,9 +15,8 @@ public class WebhookController {
         this.bot = bot;
     }
 
-    @PostMapping(value = "/callback/${BOT_SERVER}:${SERVER_PORT}")
-    @ResponseBody
-    public PartialBotApiMethod<?> onUpdateReceived(@RequestBody Update update) {
-        return bot.onWebhookUpdateReceived(update);
+    @PostMapping(value = "/callback")
+    public void onUpdateReceived(@RequestBody Update update) {
+        bot.onWebhookUpdateReceived(update);
     }
 }

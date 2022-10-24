@@ -18,13 +18,13 @@ public class BotConfiguration {
 
     public BotConfiguration(@Value("${BOT_USERNAME}") String username,
                             @Value("${BOT_TOKEN}") String token,
-                            @Value("${BOT_SERVER}:${SERVER_PORT}") String path,
+                            @Value("${BOT_SERVER}:${SERVER_PORT}") String botUrl,
                             @Value("${CERTIFICATE_PATH}") String publicKey) {
         this.username = username;
         this.token = token;
-        this.path = path;
+        this.path = null;
         this.webhook = SetWebhook.builder()
-            .url(path)
+            .url(botUrl)
             .certificate(new InputFile(new File(RESOURCES_PATH + publicKey)))
             .build();
     }
