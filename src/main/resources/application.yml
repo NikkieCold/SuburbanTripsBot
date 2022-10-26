@@ -9,6 +9,6 @@ spring:
 
 server:
   ssl:
-      key-store: classpath:${KEYSTORE_PATH} #.jks keystore
+      key-store: src/main/resources/${KEYSTORE_PATH} #.jks keystore
       key-store-password: ${KEYSTORE_PASSWORD}
   port: ${SERVER_PORT}
