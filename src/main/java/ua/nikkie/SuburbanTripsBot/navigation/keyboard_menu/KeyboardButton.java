@@ -1,7 +1,12 @@
 package ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu;
 
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_CAR_MODEL_SPECIFYING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_MENU;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_NAME_SPECIFYING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PHONE_NUMBER_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_MENU;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_SEATS_NUMBER_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.INLINE_KEYBOARD_MESSAGE;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.PASSENGER_MENU;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.START_MENU;
@@ -30,15 +35,15 @@ public enum KeyboardButton {
             DRIVER_PROFILE_MENU, "Мій профіль водія"),
 
     DRIVER_PROFILE_EDIT_NAME(
-        null, "Змінити ім'я"),
+        DRIVER_NAME_SPECIFYING, "Змінити ім'я"),
     DRIVER_PROFILE_EDIT_PHONE_NUMBER(
-        null, "Змінити номер телефону"),
+        DRIVER_PHONE_NUMBER_SPECIFYING, "Змінити номер телефону"),
     DRIVER_PROFILE_EDIT_CAR_MODEL(
-        null, "Змінити марку та модель авто"),
+        DRIVER_CAR_MODEL_SPECIFYING, "Змінити марку та модель авто"),
     DRIVER_PROFILE_EDIT_SEATS_NUMBER(
-        null, "Змінити кількість вільних місць"),
+        DRIVER_SEATS_NUMBER_SPECIFYING, "Змінити кількість вільних місць"),
     DRIVER_PROFILE_EDIT_CAR_PHOTO(
-        null, "Змінити фото автомобіля"),
+        DRIVER_CAR_PHOTO_SPECIFYING, "Змінити фото автомобіля"),
     DRIVER_PROFILE_BACK(
         DRIVER_MENU, "\u2B05 Назад (меню водія)"),
 

@@ -1,6 +1,6 @@
 package ua.nikkie.SuburbanTripsBot.update_handlers;
 
-import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineMessage.getInlineResponseWithButton;
 
 import lombok.extern.slf4j.Slf4j;
@@ -136,11 +136,7 @@ public class MessageHandler {
     private boolean isWaitingForUserInput(Message message) {
         BotUser user = botUserService.getBotUser(message);
 
-        if (isNull(user.getPage()) || isNull(user.getPage().getResponse(message))) {
-            return false;
-        }
-
-        return user.getPage().isUserInputPage();
+        return nonNull(user.getPage()) && user.getPage().isUserInputPage();
     }
 
     private PartialBotApiMethod<Message> handleUserInputMessage(Message message) throws UnexpectedInput {
@@ -149,40 +145,48 @@ public class MessageHandler {
             return KeyboardButton.START.getTargetPage().getResponse(message);
         }
 
-        KeyboardPage page = botUserService.getBotUser(message).getPage();
-        KeyboardPage nextPage;
+        BotUser botUser = botUserService.getBotUser(message);
+        KeyboardPage nextPage = KeyboardPage.DRIVER_PROFILE_MENU;
 
         if (message.hasText()) {
-            switch (page) {
+            switch (botUser.getPage()) {
                 case DRIVER_NAME_SPECIFYING:
                     if (message.getText().length() > 50) {
-                        return page.getResponseWithCustomText(message, page.getText(message)
+                        return botUser.getPage().getResponseWithCustomText(message, botUser.getPage().getText(message)
                             .concat("\nІм'я не має бути довшим за 50 символів!"));
                     }
                     botUserService.setName(message);
-                    botUserService.setRegistrationStage(message, BotUserRegistrationStage.NAME);
-                    nextPage = KeyboardPage.DRIVER_PHONE_NUMBER_SPECIFYING;
+                    if (botUser.getRegistrationStage() != BotUserRegistrationStage.CAR_PHOTO) {
+                        botUserService.setRegistrationStage(message, BotUserRegistrationStage.NAME);
+                        nextPage = KeyboardPage.DRIVER_PHONE_NUMBER_SPECIFYING;
+                    }
                     break;
                 case DRIVER_PHONE_NUMBER_SPECIFYING:
                     botUserService.setPhoneNumber(message);
-                    botUserService.setRegistrationStage(message, BotUserRegistrationStage.PHONE_NUMBER);
-                    nextPage = KeyboardPage.DRIVER_CAR_MODEL_SPECIFYING;
+                    if (botUser.getRegistrationStage() != BotUserRegistrationStage.CAR_PHOTO) {
+                        botUserService.setRegistrationStage(message, BotUserRegistrationStage.PHONE_NUMBER);
+                        nextPage = KeyboardPage.DRIVER_CAR_MODEL_SPECIFYING;
+                    }
                     break;
                 case DRIVER_CAR_MODEL_SPECIFYING:
                     botUserService.setCarModel(message);
-                    botUserService.setRegistrationStage(message, BotUserRegistrationStage.CAR_MODEL);
-                    nextPage = KeyboardPage.DRIVER_SEATS_NUMBER_SPECIFYING;
+                    if (botUser.getRegistrationStage() != BotUserRegistrationStage.CAR_PHOTO) {
+                        botUserService.setRegistrationStage(message, BotUserRegistrationStage.CAR_MODEL);
+                        nextPage = KeyboardPage.DRIVER_SEATS_NUMBER_SPECIFYING;
+                    }
                     break;
                 case DRIVER_SEATS_NUMBER_SPECIFYING:
                     botUserService.setSeatsNumber(message);
-                    botUserService.setRegistrationStage(message, BotUserRegistrationStage.SEATS_NUMBER);
-                    nextPage = KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING;
+                    if (botUser.getRegistrationStage() != BotUserRegistrationStage.CAR_PHOTO) {
+                        botUserService.setRegistrationStage(message, BotUserRegistrationStage.SEATS_NUMBER);
+                        nextPage = KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING;
+                    }
                     break;
                 default:
                     throw new UnexpectedInput();
             }
         } else if (message.hasPhoto()) {
-            if (page != KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING) {
+            if (botUser.getPage() != KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING) {
                 throw new UnexpectedInput();
             }
             botUserService.setCarPhoto(message);
