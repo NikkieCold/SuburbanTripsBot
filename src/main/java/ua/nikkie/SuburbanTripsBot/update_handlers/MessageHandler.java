@@ -1,8 +1,30 @@
 package ua.nikkie.SuburbanTripsBot.update_handlers;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineMessage.getInlineResponseWithButton;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_MY_TRIPS;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_CAR_MODEL_SPECIFYING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_CAR_PHOTO_SPECIFYING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_MENU;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_NAME_SPECIFYING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_PHONE_NUMBER_SPECIFYING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_SEATS_NUMBER_SPECIFYING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_COMMENT_QUESTION;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_COMMENT_SPECIFYING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_DATE_CHOOSING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_DESTINATION_CHOOSING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_SEATS_NUMBER_QUESTION;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_SEATS_NUMBER_SPECIFYING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOPS_THROUGH_QUESTION;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOPS_THROUGH_SPECIFYING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOP_FROM_SPECIFYING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOP_TO_SPECIFYING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_TIME_CHOOSING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_TIME_RANGE_CHOOSING;
 
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultAbsSender;
@@ -14,6 +36,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.nikkie.SuburbanTripsBot.entities.BotUser;
 import ua.nikkie.SuburbanTripsBot.entities.enums.BotUserRegistrationStage;
 import ua.nikkie.SuburbanTripsBot.entities.services.BotUserService;
+import ua.nikkie.SuburbanTripsBot.entities.services.DriverTripService;
 import ua.nikkie.SuburbanTripsBot.exceptions.NotParsableMessage;
 import ua.nikkie.SuburbanTripsBot.exceptions.UnexpectedInput;
 import ua.nikkie.SuburbanTripsBot.exceptions.UnexpectedSendMethod;
@@ -27,24 +50,26 @@ import ua.nikkie.SuburbanTripsBot.util.SendMethodClass;
 public class MessageHandler {
 
     BotUserService botUserService;
+    DriverTripService driverTripService;
 
-    public MessageHandler(BotUserService botUserService) {
+    public MessageHandler(BotUserService botUserService, DriverTripService driverTripService) {
         this.botUserService = botUserService;
+        this.driverTripService = driverTripService;
     }
 
     public void handle(DefaultAbsSender sender, Message message) throws TelegramApiException {
         try {
             if (isWaitingForUserInput(message)) {
-                sendResponse(sender, handleUserInputMessage(message));
+                sendResponseList(sender, handleUserInputMessage(message));
                 return;
             }
         } catch (UnexpectedInput e) {
-            sendResponse(sender, botUserService.getBotUser(message).getPage().getResponse(message));
+            sendResponseList(sender, botUserService.getBotUser(message).getPage().getResponse(message));
             return;
         }
 
         try {
-            sendResponse(sender, getResponseByCalledButton(new ParsedMessage(message), message));
+            sendResponseList(sender, getResponseByCalledButton(new ParsedMessage(message), message));
         } catch (NotParsableMessage e) {
             log.debug("Can't parse message with text: {}", message.getText(), e);
             sender.execute(buildNotCommandMessage(message));
@@ -53,19 +78,23 @@ public class MessageHandler {
         }
     }
 
-    private void sendResponse(DefaultAbsSender sender, PartialBotApiMethod<Message> response)
-        throws TelegramApiException {
-
-        switch (SendMethodClass.get(response)) {
-            case SendMessage:
-                sender.execute((SendMessage) response);
-                break;
-            case SendPhoto:
-                sender.execute((SendPhoto) response);
-                break;
-            default:
-                throw new UnexpectedSendMethod(response);
-        }
+    private void sendResponseList(DefaultAbsSender sender, List<PartialBotApiMethod<Message>> responseList) {
+        responseList.forEach(r -> {
+            try {
+                switch (SendMethodClass.get(r)) {
+                    case SendMessage:
+                        sender.execute((SendMessage) r);
+                        break;
+                    case SendPhoto:
+                        sender.execute((SendPhoto) r);
+                        break;
+                    default:
+                        throw new UnexpectedSendMethod(r);
+                }
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private SendMessage buildNotCommandMessage(Message message) {
@@ -82,9 +111,9 @@ public class MessageHandler {
                 .build();
     }
 
-    private PartialBotApiMethod<Message> getResponseByCalledButton(ParsedMessage parsedMessage, Message message) {
+    private List<PartialBotApiMethod<Message>> getResponseByCalledButton(ParsedMessage parsedMessage, Message message) {
         KeyboardButton button = parsedMessage.getCalledButton();
-        PartialBotApiMethod<Message> response;
+        List<PartialBotApiMethod<Message>> response;
 
         switch (button) {
             case START_CONTACT:
@@ -103,7 +132,7 @@ public class MessageHandler {
         return response;
     }
 
-    private PartialBotApiMethod<Message> getDriverProfileAccessPage(Message message, ParsedMessage parsedMessage) {
+    private List<PartialBotApiMethod<Message>> getDriverProfileAccessPage(Message message, ParsedMessage parsedMessage) {
         BotUserRegistrationStage registrationStage = botUserService.getBotUser(message).getRegistrationStage();
 
         if (registrationStage == BotUserRegistrationStage.CAR_PHOTO) {
@@ -114,19 +143,19 @@ public class MessageHandler {
 
         switch (registrationStage) {
             case NOT_REGISTERED:
-                parsedMessage.setTargetPage(KeyboardPage.DRIVER_NAME_SPECIFYING);
+                parsedMessage.setTargetPage(DRIVER_PROFILE_NAME_SPECIFYING);
                 break;
             case NAME:
-                parsedMessage.setTargetPage(KeyboardPage.DRIVER_PHONE_NUMBER_SPECIFYING);
+                parsedMessage.setTargetPage(DRIVER_PROFILE_PHONE_NUMBER_SPECIFYING);
                 break;
             case PHONE_NUMBER:
-                parsedMessage.setTargetPage(KeyboardPage.DRIVER_CAR_MODEL_SPECIFYING);
+                parsedMessage.setTargetPage(DRIVER_PROFILE_CAR_MODEL_SPECIFYING);
                 break;
             case CAR_MODEL:
-                parsedMessage.setTargetPage(KeyboardPage.DRIVER_SEATS_NUMBER_SPECIFYING);
+                parsedMessage.setTargetPage(DRIVER_PROFILE_SEATS_NUMBER_SPECIFYING);
                 break;
             case SEATS_NUMBER:
-                parsedMessage.setTargetPage(KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING);
+                parsedMessage.setTargetPage(DRIVER_PROFILE_CAR_PHOTO_SPECIFYING);
                 break;
         }
 
@@ -139,54 +168,73 @@ public class MessageHandler {
         return nonNull(user.getPage()) && user.getPage().isUserInputPage();
     }
 
-    private PartialBotApiMethod<Message> handleUserInputMessage(Message message) throws UnexpectedInput {
+    private List<PartialBotApiMethod<Message>> handleUserInputMessage(Message message) throws UnexpectedInput {
         if (message.hasText() && message.getText().equals(KeyboardButton.START.getButtonText())) {
             botUserService.setPage(message, KeyboardButton.START.getTargetPage());
             return KeyboardButton.START.getTargetPage().getResponse(message);
         }
 
+        KeyboardPage page = botUserService.getBotUser(message).getPage();
+
+        if (asList(DRIVER_PROFILE_NAME_SPECIFYING, DRIVER_PROFILE_PHONE_NUMBER_SPECIFYING,
+            DRIVER_PROFILE_CAR_MODEL_SPECIFYING, DRIVER_PROFILE_SEATS_NUMBER_SPECIFYING,
+            DRIVER_PROFILE_CAR_PHOTO_SPECIFYING).contains(page)) {
+            return handleProfileSpecifying(message);
+        }
+
+        if (asList(DRIVER_TRIP_DESTINATION_CHOOSING, DRIVER_TRIP_STOP_FROM_SPECIFYING, DRIVER_TRIP_STOP_TO_SPECIFYING,
+            DRIVER_TRIP_STOPS_THROUGH_SPECIFYING, DRIVER_TRIP_COMMENT_SPECIFYING, DRIVER_TRIP_SEATS_NUMBER_SPECIFYING,
+            DRIVER_TRIP_DATE_CHOOSING, DRIVER_TRIP_TIME_RANGE_CHOOSING, DRIVER_TRIP_TIME_CHOOSING).contains(page)) {
+            return handleTripSpecifying(message);
+        }
+
+        throw new UnexpectedInput();
+    }
+
+    private List<PartialBotApiMethod<Message>> handleProfileSpecifying(Message message) throws UnexpectedInput {
         BotUser botUser = botUserService.getBotUser(message);
-        KeyboardPage nextPage = KeyboardPage.DRIVER_PROFILE_MENU;
+        KeyboardPage nextPage = DRIVER_PROFILE_MENU;
 
         if (message.hasText()) {
             switch (botUser.getPage()) {
-                case DRIVER_NAME_SPECIFYING:
+                case DRIVER_PROFILE_NAME_SPECIFYING:
                     if (message.getText().length() > 50) {
-                        return botUser.getPage().getResponseWithCustomText(message, botUser.getPage().getText(message)
-                            .concat("\nІм'я не має бути довшим за 50 символів!"));
+                        return singletonList(botUser.getPage().getResponseWithCustomText(
+                            message, botUser.getPage().getText(message)
+                            .concat("\nІм'я не має бути довшим за 50 символів!")));
                     }
                     botUserService.setName(message);
                     if (botUser.getRegistrationStage() != BotUserRegistrationStage.CAR_PHOTO) {
                         botUserService.setRegistrationStage(message, BotUserRegistrationStage.NAME);
-                        nextPage = KeyboardPage.DRIVER_PHONE_NUMBER_SPECIFYING;
+                        nextPage = DRIVER_PROFILE_PHONE_NUMBER_SPECIFYING;
                     }
                     break;
-                case DRIVER_PHONE_NUMBER_SPECIFYING:
+                case DRIVER_PROFILE_PHONE_NUMBER_SPECIFYING:
                     botUserService.setPhoneNumber(message);
                     if (botUser.getRegistrationStage() != BotUserRegistrationStage.CAR_PHOTO) {
                         botUserService.setRegistrationStage(message, BotUserRegistrationStage.PHONE_NUMBER);
-                        nextPage = KeyboardPage.DRIVER_CAR_MODEL_SPECIFYING;
+                        nextPage = DRIVER_PROFILE_CAR_MODEL_SPECIFYING;
                     }
                     break;
-                case DRIVER_CAR_MODEL_SPECIFYING:
+                case DRIVER_PROFILE_CAR_MODEL_SPECIFYING:
                     botUserService.setCarModel(message);
                     if (botUser.getRegistrationStage() != BotUserRegistrationStage.CAR_PHOTO) {
                         botUserService.setRegistrationStage(message, BotUserRegistrationStage.CAR_MODEL);
-                        nextPage = KeyboardPage.DRIVER_SEATS_NUMBER_SPECIFYING;
+                        nextPage = DRIVER_PROFILE_SEATS_NUMBER_SPECIFYING;
                     }
                     break;
-                case DRIVER_SEATS_NUMBER_SPECIFYING:
+                case DRIVER_PROFILE_SEATS_NUMBER_SPECIFYING:
                     botUserService.setSeatsNumber(message);
                     if (botUser.getRegistrationStage() != BotUserRegistrationStage.CAR_PHOTO) {
                         botUserService.setRegistrationStage(message, BotUserRegistrationStage.SEATS_NUMBER);
-                        nextPage = KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING;
+                        nextPage = DRIVER_PROFILE_CAR_PHOTO_SPECIFYING;
                     }
                     break;
                 default:
                     throw new UnexpectedInput();
             }
         } else if (message.hasPhoto()) {
-            if (botUser.getPage() != KeyboardPage.DRIVER_CAR_PHOTO_SPECIFYING) {
+            if (botUser.getPage() != DRIVER_PROFILE_CAR_PHOTO_SPECIFYING) {
                 throw new UnexpectedInput();
             }
             botUserService.setCarPhoto(message);
@@ -194,6 +242,60 @@ public class MessageHandler {
             nextPage = botUserService.getBotUser(message).getRegistrationCalledPage();
         } else {
             throw new UnexpectedInput();
+        }
+
+        botUserService.setPage(message, nextPage);
+        return nextPage.getResponse(message);
+    }
+
+    private List<PartialBotApiMethod<Message>> handleTripSpecifying(Message message) throws UnexpectedInput {
+        BotUser botUser = botUserService.getBotUser(message);
+        KeyboardPage page = botUser.getPage();
+        KeyboardPage nextPage;
+
+        if (!message.hasText()) {
+            throw new UnexpectedInput();
+        }
+
+        switch (page) {
+            case DRIVER_TRIP_DESTINATION_CHOOSING:
+                driverTripService.setDestination(message);
+                nextPage = DRIVER_TRIP_STOP_FROM_SPECIFYING;
+                break;
+            case DRIVER_TRIP_STOP_FROM_SPECIFYING:
+                driverTripService.setStopFrom(message);
+                nextPage = DRIVER_TRIP_STOP_TO_SPECIFYING;
+                break;
+            case DRIVER_TRIP_STOP_TO_SPECIFYING:
+                driverTripService.setStopTo(message);
+                nextPage = DRIVER_TRIP_STOPS_THROUGH_QUESTION;
+                break;
+            case DRIVER_TRIP_STOPS_THROUGH_SPECIFYING:
+                driverTripService.setStopsThrough(message);
+                nextPage = DRIVER_TRIP_COMMENT_QUESTION;
+                break;
+            case DRIVER_TRIP_COMMENT_SPECIFYING:
+                driverTripService.setComment(message);
+                nextPage = DRIVER_TRIP_SEATS_NUMBER_QUESTION;
+                break;
+            case DRIVER_TRIP_SEATS_NUMBER_SPECIFYING:
+                driverTripService.setSeatsNumber(message);
+                nextPage = DRIVER_TRIP_DATE_CHOOSING;
+                break;
+            case DRIVER_TRIP_DATE_CHOOSING:
+                driverTripService.setDate(message);
+                nextPage = DRIVER_TRIP_TIME_RANGE_CHOOSING;
+                break;
+            case DRIVER_TRIP_TIME_RANGE_CHOOSING:
+                driverTripService.setTimeRange(message);
+                nextPage = DRIVER_TRIP_TIME_CHOOSING;
+                break;
+            case DRIVER_TRIP_TIME_CHOOSING:
+                driverTripService.setTime(message);
+                nextPage = DRIVER_MY_TRIPS;
+                break;
+            default:
+                throw new UnexpectedInput();
         }
 
         botUserService.setPage(message, nextPage);
