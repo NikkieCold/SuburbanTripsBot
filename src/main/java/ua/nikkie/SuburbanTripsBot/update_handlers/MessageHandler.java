@@ -1,6 +1,5 @@
 package ua.nikkie.SuburbanTripsBot.update_handlers;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineMessage.getInlineResponseWithButton;
@@ -12,13 +11,9 @@ import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.D
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_PHONE_NUMBER_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_SEATS_NUMBER_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_COMMENT_QUESTION;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_COMMENT_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_DATE_CHOOSING;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_DESTINATION_CHOOSING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_SEATS_NUMBER_QUESTION;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_SEATS_NUMBER_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOPS_THROUGH_QUESTION;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOPS_THROUGH_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOP_FROM_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOP_TO_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_TIME_CHOOSING;
@@ -42,6 +37,7 @@ import ua.nikkie.SuburbanTripsBot.exceptions.UnexpectedInput;
 import ua.nikkie.SuburbanTripsBot.exceptions.UnexpectedSendMethod;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage;
+import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.InputPage;
 import ua.nikkie.SuburbanTripsBot.navigation.parsing.ParsedMessage;
 import ua.nikkie.SuburbanTripsBot.util.SendMethodClass;
 
@@ -120,7 +116,7 @@ public class MessageHandler {
                 return getInlineResponseWithButton(message, button);
             case DRIVER_ACTIVE:
             case DRIVER_CREATE:
-            case DRIVER_TRIPS:
+            case DRIVER_MY_TRIPS_BUTTON:
             case DRIVER_PROFILE:
                 response = getDriverProfileAccessPage(message, parsedMessage);
                 break;
@@ -165,30 +161,33 @@ public class MessageHandler {
     private boolean isWaitingForUserInput(Message message) {
         BotUser user = botUserService.getBotUser(message);
 
-        return nonNull(user.getPage()) && user.getPage().isUserInputPage();
+        return nonNull(user.getPage()) && user.getPage().isUserInputPage() != InputPage.REGULAR;
     }
 
     private List<PartialBotApiMethod<Message>> handleUserInputMessage(Message message) throws UnexpectedInput {
         if (message.hasText() && message.getText().equals(KeyboardButton.START.getButtonText())) {
-            botUserService.setPage(message, KeyboardButton.START.getTargetPage());
-            return KeyboardButton.START.getTargetPage().getResponse(message);
+            KeyboardPage targetPage = KeyboardButton.START.getTargetPage();
+            botUserService.setPage(message, targetPage);
+            driverTripService.deleteUnfinishedTrips(message);
+            return targetPage.getResponse(message);
+        }
+        if (message.hasText() && message.getText().equals(KeyboardButton.DRIVER_BACK_TO_MAIN_MENU.getButtonText())) {
+            KeyboardPage targetPage = KeyboardButton.DRIVER_BACK_TO_MAIN_MENU.getTargetPage();
+            botUserService.setPage(message, targetPage);
+            driverTripService.deleteUnfinishedTrips(message);
+            return targetPage.getResponse(message);
         }
 
         KeyboardPage page = botUserService.getBotUser(message).getPage();
 
-        if (asList(DRIVER_PROFILE_NAME_SPECIFYING, DRIVER_PROFILE_PHONE_NUMBER_SPECIFYING,
-            DRIVER_PROFILE_CAR_MODEL_SPECIFYING, DRIVER_PROFILE_SEATS_NUMBER_SPECIFYING,
-            DRIVER_PROFILE_CAR_PHOTO_SPECIFYING).contains(page)) {
-            return handleProfileSpecifying(message);
+        switch (page.isUserInputPage()) {
+            case DRIVER_PROFILE_INPUT:
+                return handleProfileSpecifying(message);
+            case DRIVER_TRIP_CREATE_INPUT:
+                return handleTripSpecifying(message);
+            case REGULAR:
+            default: throw new UnexpectedInput();
         }
-
-        if (asList(DRIVER_TRIP_DESTINATION_CHOOSING, DRIVER_TRIP_STOP_FROM_SPECIFYING, DRIVER_TRIP_STOP_TO_SPECIFYING,
-            DRIVER_TRIP_STOPS_THROUGH_SPECIFYING, DRIVER_TRIP_COMMENT_SPECIFYING, DRIVER_TRIP_SEATS_NUMBER_SPECIFYING,
-            DRIVER_TRIP_DATE_CHOOSING, DRIVER_TRIP_TIME_RANGE_CHOOSING, DRIVER_TRIP_TIME_CHOOSING).contains(page)) {
-            return handleTripSpecifying(message);
-        }
-
-        throw new UnexpectedInput();
     }
 
     private List<PartialBotApiMethod<Message>> handleProfileSpecifying(Message message) throws UnexpectedInput {
@@ -258,13 +257,27 @@ public class MessageHandler {
         }
 
         switch (page) {
+            case DRIVER_TRIP_STOPS_THROUGH_QUESTION:
+            case DRIVER_TRIP_COMMENT_QUESTION:
+            case DRIVER_TRIP_SEATS_NUMBER_QUESTION:
+                try {
+                    nextPage = new ParsedMessage(message).getTargetPage();
+                    break;
+                } catch (NotParsableMessage e) {
+                    throw new UnexpectedInput();
+                }
             case DRIVER_TRIP_DESTINATION_CHOOSING:
                 driverTripService.setDestination(message);
                 nextPage = DRIVER_TRIP_STOP_FROM_SPECIFYING;
                 break;
             case DRIVER_TRIP_STOP_FROM_SPECIFYING:
-                driverTripService.setStopFrom(message);
-                nextPage = DRIVER_TRIP_STOP_TO_SPECIFYING;
+                try {
+                    nextPage = new ParsedMessage(message).getTargetPage();
+                    driverTripService.deleteUnfinishedTrips(message);
+                } catch (NotParsableMessage e) {
+                    driverTripService.setStopFrom(message);
+                    nextPage = DRIVER_TRIP_STOP_TO_SPECIFYING;
+                }
                 break;
             case DRIVER_TRIP_STOP_TO_SPECIFYING:
                 driverTripService.setStopTo(message);
@@ -295,6 +308,7 @@ public class MessageHandler {
                 nextPage = DRIVER_MY_TRIPS;
                 break;
             default:
+                driverTripService.deleteUnfinishedTrips(message);
                 throw new UnexpectedInput();
         }
 

@@ -13,7 +13,6 @@ public enum DriverTripDestination {
 
     private final String displayDestination;
     private final String fromCity;
-
     private final String toCity;
 
     DriverTripDestination(String displayDestination, String fromCity, String toCity) {
@@ -28,6 +27,10 @@ public enum DriverTripDestination {
 
     public String getToCity() {
         return toCity;
+    }
+
+    public String getDisplayDestination() {
+        return displayDestination;
     }
 
     public static DriverTripDestination parseMessage(Message message) throws UnexpectedInput {

@@ -1,6 +1,7 @@
 package ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu;
 
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_MENU;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_MY_TRIPS;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_CAR_MODEL_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_CAR_PHOTO_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_MENU;
@@ -14,7 +15,6 @@ import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.D
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_SEATS_NUMBER_QUESTION;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_SEATS_NUMBER_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOPS_THROUGH_SPECIFYING;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOP_FROM_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.INLINE_KEYBOARD_MESSAGE;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.PASSENGER_MENU;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.START_MENU;
@@ -34,18 +34,21 @@ public enum KeyboardButton {
         INLINE_KEYBOARD_MESSAGE, "Інформація про бота"),
 
     //region Driver BUTTONS
+    //region Driver Main Manu
     DRIVER_ACTIVE(
         null, "\uD83D\uDCCB Розміщені оголошення від пасажирів"),
     DRIVER_CREATE(
         DRIVER_TRIP_DESTINATION_CHOOSING, "\u270D Створити поїздку"),
-    DRIVER_TRIPS(
-        null, "\uD83D\uDCAC Мої поїздки"),
+    DRIVER_MY_TRIPS_BUTTON(
+        DRIVER_MY_TRIPS, "\uD83D\uDCAC Мої поїздки"),
     DRIVER_PROFILE(
         DRIVER_PROFILE_MENU, "Мій профіль водія"),
-    DRIVER_BACK_TO_MAIN_MENU(
-        DRIVER_MENU, "\u2B05 Назад (меню водія)"),
     DRIVER_TO_PASSENGER(
         PASSENGER_MENU, "Режим пасажира"),
+
+    DRIVER_BACK_TO_MAIN_MENU(
+        DRIVER_MENU, "\u2B05 Назад (меню водія)"),
+    //endregion
 
     //region Driver Profile
     DRIVER_PROFILE_EDIT_NAME(
@@ -62,10 +65,13 @@ public enum KeyboardButton {
 
     //region Driver Trip
     DRIVER_TRIP_CREATE_DESTINATION_TO_VASYLKIV(
-        DRIVER_TRIP_STOP_FROM_SPECIFYING, "Київ -> Васильків"
+        null, "Київ -> Васильків"
     ),
     DRIVER_TRIP_CREATE_DESTINATION_TO_KYIV(
-        DRIVER_TRIP_STOP_FROM_SPECIFYING, "Васильків -> Київ"
+        null, "Васильків -> Київ"
+    ),
+    DRIVER_TRIP_CREATE_STOP_FROM_SPECIFYING_CHANGE_DESTINATION(
+        DRIVER_TRIP_DESTINATION_CHOOSING, "Змінити напрямок"
     ),
     DRIVER_TRIP_CREATE_STOPS_THROUGH_QUESTION_YES(
         DRIVER_TRIP_STOPS_THROUGH_SPECIFYING, "Так, вказати"
@@ -89,6 +95,7 @@ public enum KeyboardButton {
     //endregion
 
     //region Passenger BUTTONS
+    //region Passenger Main Menu
     PASSENGER_ACTIVE(
         null, "\uD83D\uDCCB Розміщені поїздки від водіїв"),
     PASSENGER_CREATE(
@@ -99,6 +106,7 @@ public enum KeyboardButton {
         null, "Мій профіль пасажира"),
     PASSENGER_TO_DRIVER(
         DRIVER_MENU, "Режим водія");
+    //endregion
     //endregion
 
     private final KeyboardPage targetPage;

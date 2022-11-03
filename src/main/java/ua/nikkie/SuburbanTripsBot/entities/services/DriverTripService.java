@@ -39,6 +39,13 @@ public class DriverTripService {
     }
 
     @Transactional
+    public void deleteUnfinishedTrips(Message message) {
+        driverTripRepository.findDriverTripsByDriver(botUserService.getBotUser(message)).stream()
+            .filter(t -> !t.getIsFinished())
+            .forEach(driverTripRepository::delete);
+    }
+
+    @Transactional
     public void setDestination(Message message) throws UnexpectedInput {
         DriverTrip driverTrip = driverTripRepository.save(new DriverTrip(botUserService.getBotUser(message)));
         driverTrip.setDestination(DriverTripDestination.parseMessage(message));

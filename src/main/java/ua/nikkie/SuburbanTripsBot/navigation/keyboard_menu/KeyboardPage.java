@@ -12,13 +12,13 @@ import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_PROFILE_EDIT_PHONE_NUMBER;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_PROFILE_EDIT_SEATS_NUMBER;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TO_PASSENGER;
-import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TRIPS;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TRIP_CREATE_COMMENT_QUESTION_NO;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TRIP_CREATE_COMMENT_QUESTION_YES;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TRIP_CREATE_DESTINATION_TO_KYIV;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TRIP_CREATE_DESTINATION_TO_VASYLKIV;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TRIP_CREATE_STOPS_THROUGH_QUESTION_NO;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TRIP_CREATE_STOPS_THROUGH_QUESTION_YES;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TRIP_CREATE_STOP_FROM_SPECIFYING_CHANGE_DESTINATION;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TRIP_SEATS_NUMBER_QUESTION_NO;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.DRIVER_TRIP_SEATS_NUMBER_QUESTION_YES;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.PASSENGER_ACTIVE;
@@ -34,6 +34,7 @@ import static ua.nikkie.SuburbanTripsBot.util.BotUtil.DateTime.getDateChoosingKe
 import static ua.nikkie.SuburbanTripsBot.util.BotUtil.DateTime.getTimeChoosingKeyboard;
 import static ua.nikkie.SuburbanTripsBot.util.BotUtil.DateTime.getTimeRangeChoosingKeyboard;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,7 @@ import ua.nikkie.SuburbanTripsBot.entities.BotUser;
 import ua.nikkie.SuburbanTripsBot.entities.enums.DriverTripDestination;
 import ua.nikkie.SuburbanTripsBot.entities.services.BotUserService;
 import ua.nikkie.SuburbanTripsBot.entities.services.DriverTripService;
+import ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineMessage;
 
 public enum KeyboardPage {
 
@@ -91,7 +93,7 @@ public enum KeyboardPage {
         public ReplyKeyboard getReplyMarkup(Message message) {
             return ReplyKeyboardBuilder.builder()
                     .addRow(DRIVER_ACTIVE)
-                    .addRow(DRIVER_CREATE, DRIVER_TRIPS)
+                    .addRow(DRIVER_CREATE, KeyboardButton.DRIVER_MY_TRIPS_BUTTON)
                     .addRow(DRIVER_PROFILE)
                     .addRow(DRIVER_TO_PASSENGER)
                     .build();
@@ -143,8 +145,8 @@ public enum KeyboardPage {
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_PROFILE_INPUT;
         }
     },
 
@@ -160,8 +162,8 @@ public enum KeyboardPage {
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_PROFILE_INPUT;
         }
     },
 
@@ -177,8 +179,8 @@ public enum KeyboardPage {
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_PROFILE_INPUT;
         }
     },
 
@@ -194,8 +196,8 @@ public enum KeyboardPage {
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_PROFILE_INPUT;
         }
     },
 
@@ -211,8 +213,8 @@ public enum KeyboardPage {
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_PROFILE_INPUT;
         }
     },
     //endregion
@@ -221,7 +223,7 @@ public enum KeyboardPage {
     DRIVER_MY_TRIPS {
         @Override
         public String getText(Message message) {
-            return "Trips count: " + driverTripService.getDriverTrips(message).size();
+            return "Тут ти можеш видалити поїздку або змінити дату, час, опис чи актуальну кількість вільних місць";
         }
 
         @Override
@@ -229,6 +231,13 @@ public enum KeyboardPage {
             return ReplyKeyboardBuilder.builder()
                 .addRow(DRIVER_BACK_TO_MAIN_MENU)
                 .build();
+        }
+
+        @Override
+        public List<PartialBotApiMethod<Message>> getResponse(Message message) {
+            List<PartialBotApiMethod<Message>> responses = new ArrayList<>(InlineMessage.MY_TRIPS.getResponse(message));
+            responses.addAll(super.getResponse(message));
+            return responses;
         }
     },
 
@@ -243,32 +252,36 @@ public enum KeyboardPage {
             return ReplyKeyboardBuilder.builder()
                 .addRow(DRIVER_TRIP_CREATE_DESTINATION_TO_KYIV)
                 .addRow(DRIVER_TRIP_CREATE_DESTINATION_TO_VASYLKIV)
+                .addRow(DRIVER_BACK_TO_MAIN_MENU)
                 .build();
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
         }
     },
 
     DRIVER_TRIP_STOP_FROM_SPECIFYING {
 
-        private final static String FROM_SPECIFYING_TEXT_FORMAT = "Вкажи з якої зупинки в %s будеш їхати:";
+        private final static String FROM_SPECIFYING_TEXT_FORMAT =
+                "Обраний напрямок: \n%s\n\nВкажи з якої зупинки в %s будеш їхати:";
         @Override
         public String getText(Message message) {
             DriverTripDestination destination = driverTripService.getUnfinishedTrip(message).getDestination();
-            return format(FROM_SPECIFYING_TEXT_FORMAT, destination.getFromCity());
+            return format(FROM_SPECIFYING_TEXT_FORMAT, destination.getDisplayDestination(), destination.getFromCity());
         }
 
         @Override
         public ReplyKeyboard getReplyMarkup(Message message) {
-            return REPLY_KEYBOARD_REMOVE;
+            return ReplyKeyboardBuilder.builder()
+                .addRow(DRIVER_BACK_TO_MAIN_MENU, DRIVER_TRIP_CREATE_STOP_FROM_SPECIFYING_CHANGE_DESTINATION)
+                .build();
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
         }
     },
 
@@ -288,8 +301,8 @@ public enum KeyboardPage {
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
         }
     },
 
@@ -306,6 +319,11 @@ public enum KeyboardPage {
                 .addRow(DRIVER_TRIP_CREATE_STOPS_THROUGH_QUESTION_NO)
                 .build();
         }
+
+        @Override
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
+        }
     },
 
     DRIVER_TRIP_STOPS_THROUGH_SPECIFYING {
@@ -320,8 +338,8 @@ public enum KeyboardPage {
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
         }
     },
 
@@ -338,6 +356,11 @@ public enum KeyboardPage {
                 .addRow(DRIVER_TRIP_CREATE_COMMENT_QUESTION_NO)
                 .build();
         }
+
+        @Override
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
+        }
     },
 
     DRIVER_TRIP_COMMENT_SPECIFYING {
@@ -353,8 +376,8 @@ public enum KeyboardPage {
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
         }
     },
 
@@ -375,6 +398,11 @@ public enum KeyboardPage {
                 .addRow(DRIVER_TRIP_SEATS_NUMBER_QUESTION_NO)
                 .build();
         }
+
+        @Override
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
+        }
     },
 
     DRIVER_TRIP_SEATS_NUMBER_SPECIFYING {
@@ -389,8 +417,8 @@ public enum KeyboardPage {
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
         }
     },
 
@@ -406,8 +434,8 @@ public enum KeyboardPage {
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
         }
     },
 
@@ -423,8 +451,8 @@ public enum KeyboardPage {
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
         }
     },
 
@@ -440,8 +468,8 @@ public enum KeyboardPage {
         }
 
         @Override
-        public boolean isUserInputPage() {
-            return true;
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
         }
     },
     //endregion
@@ -494,8 +522,8 @@ public enum KeyboardPage {
                 .build();
     }
 
-    public boolean isUserInputPage() {
-        return false;
+    public InputPage isUserInputPage() {
+        return InputPage.REGULAR;
     }
 
     public abstract String getText(Message message);
@@ -515,5 +543,9 @@ public enum KeyboardPage {
                 kp.setServices(botUserService, driverTripService);
             }
         }
+    }
+
+    public enum InputPage {
+        REGULAR, DRIVER_PROFILE_INPUT, DRIVER_TRIP_CREATE_INPUT
     }
 }

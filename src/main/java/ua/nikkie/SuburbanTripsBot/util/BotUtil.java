@@ -3,12 +3,15 @@ package ua.nikkie.SuburbanTripsBot.util;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import ua.nikkie.SuburbanTripsBot.entities.DriverTrip;
@@ -28,6 +31,17 @@ public class BotUtil {
         private static final List<String> MINUTES = asList("00", "10", "20", "30", "40", "50");
         private static final String HOUR_MINUTE_FORMAT = "%s:%s";
         private static final String DAY_MONTH_FORMAT = "%s.%s";
+        private static final Map<DayOfWeek, String> DAY_OF_WEEK_MAP = new HashMap<>();
+
+        static {
+            DAY_OF_WEEK_MAP.put(DayOfWeek.MONDAY, "Понеділок");
+            DAY_OF_WEEK_MAP.put(DayOfWeek.TUESDAY, "Вівторок");
+            DAY_OF_WEEK_MAP.put(DayOfWeek.WEDNESDAY, "Середа");
+            DAY_OF_WEEK_MAP.put(DayOfWeek.THURSDAY, "Четвер");
+            DAY_OF_WEEK_MAP.put(DayOfWeek.FRIDAY, "П'ятниця");
+            DAY_OF_WEEK_MAP.put(DayOfWeek.SATURDAY, "Субота");
+            DAY_OF_WEEK_MAP.put(DayOfWeek.SUNDAY, "Неділя");
+        }
 
         public static ReplyKeyboard getDateChoosingKeyboard() {
             LocalDateTime dateTime = LocalDateTime.now();
@@ -51,13 +65,21 @@ public class BotUtil {
             String[] timeRange = driverTrip.getTimeRange().split(" - ");
             int timeSince = Integer.parseInt(timeRange[0].split(":")[0]);
             int timeTill = Integer.parseInt(timeRange[1].split(":")[0]);
+            timeTill = timeTill == 0 ? 24 : timeTill;
+
             if (timeSince <= now && timeTill > now) {
                 return getCurrentRangeTimeChoosingKeyboard();
             }
             return getRegularTimeChoosingKeyboard(driverTrip);
         }
 
+        public static String getUkrainianDayOfWeek(DriverTrip driverTrip) {
+            return DAY_OF_WEEK_MAP.get(driverTrip.getDate().getDayOfWeek());
+        }
+
+
         //region Private methods
+
         private static ReplyKeyboard getCurrentRangeTimeChoosingKeyboard() {
             int nowHour = LocalTime.now().getHour();
             String hoursRange = HOURS_RANGES.get(nowHour / 4);

@@ -4,9 +4,11 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static ua.nikkie.SuburbanTripsBot.navigation.inline_menu.InlineButton.CONTACT_LINK;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton.START_CONTACT;
+import static ua.nikkie.SuburbanTripsBot.util.BotUtil.DateTime.getUkrainianDayOfWeek;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import ua.nikkie.SuburbanTripsBot.entities.DriverTrip;
 import ua.nikkie.SuburbanTripsBot.entities.services.BotUserService;
 import ua.nikkie.SuburbanTripsBot.entities.services.DriverTripService;
 import ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardButton;
@@ -32,36 +35,47 @@ public enum InlineMessage {
                     .addRow(CONTACT_LINK)
                     .build();
         }
-    };
+    },
 
-//    MY_TRIPS {
-//        @Override
-//        String getText() {
-//            return "%s %s";
-//        }
-//
-//        @Override
-//        InlineKeyboardMarkup getReplyMarkup() {
-//            return InlineKeyboardBuilder.builder()
-//                .addRow(CONTACT_LINK)
-//                .build();
-//        }
-//
-//        @Override
-//        public List<PartialBotApiMethod<Message>> getResponse(Message message) {
-//            List<DriverTrip> driverTripsByDriver =
-//                driverTripService.getDriverTrips(message);
-//            List<PartialBotApiMethod<Message>> responses = driverTripsByDriver.stream()
-//                .map(t -> SendMessage.builder()
-//                    .chatId(message.getChatId().toString())
-//                    .text(String.format(getText(), t.getDestinationFrom(), t.getDestinationTo()))
-//                    .replyMarkup(getReplyMarkup())
-//                    .build())
-//                .collect(Collectors.toList());
-//            responses.addAll(DRIVER_MENU.getResponse(message));
-//            return responses;
-//        }
-//    };
+    MY_TRIPS {
+        @Override
+        String getText() {
+            return "%s, %s.%s, %s:%s\n\n"
+                + "%s:\n%s\n"
+                + "Їду через:\n%s"
+                + "%s:\n%s\n"
+                + "%s\n"
+                + "Вільних місць: %s"
+                + "Вартість: 10000 грн.\n\n"
+                + "%s";
+            //TODO вартість, фото
+        }
+
+        @Override
+        InlineKeyboardMarkup getReplyMarkup() {
+            return InlineKeyboardBuilder.builder()
+                .addRow(CONTACT_LINK)
+                .build();
+        }
+
+        @Override
+        public List<PartialBotApiMethod<Message>> getResponse(Message message) {
+            return driverTripService.getDriverTrips(message).stream()
+                .map(t -> SendMessage.builder()
+                    .chatId(message.getChatId().toString())
+                    .text(String.format(getText(), getUkrainianDayOfWeek(t), t.getDate().getDayOfMonth(),
+                        t.getDate().getMonthValue(), t.getTime().getHour(), t.getTime().getMinute(),
+                        t.getDestination().getDisplayDestination().split("->")[0].trim(), t.getStopFrom(),
+                        t.getStopsThrough(),
+                        t.getDestination().getDisplayDestination().split("->")[1].trim(), t.getStopTo(),
+                        t.getDriver().getCarModel(),
+                        t.getSeatsNumber(),
+                        t.getComment()))
+                    .replyMarkup(getReplyMarkup())
+                    .build())
+                .collect(Collectors.toList());
+        }
+    };
 
     private final KeyboardButton callButton;
 
