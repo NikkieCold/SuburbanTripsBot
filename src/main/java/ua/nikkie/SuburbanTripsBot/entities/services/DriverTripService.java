@@ -77,6 +77,11 @@ public class DriverTripService {
     }
 
     @Transactional
+    public void setPrice(Message message) {
+        getUnfinishedTrip(message).setPrice(message.getText());
+    }
+
+    @Transactional
     public void setDate(Message message) {
         String dateFromMessage = format(MESSAGE_DATE_FORMAT, message.getText());
         getUnfinishedTrip(message).setDate(LocalDate.parse(dateFromMessage, DATE_FORMATTER));

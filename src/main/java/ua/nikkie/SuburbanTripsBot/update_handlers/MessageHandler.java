@@ -12,6 +12,7 @@ import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.D
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_PROFILE_SEATS_NUMBER_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_COMMENT_QUESTION;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_DATE_CHOOSING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_PRICE_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_SEATS_NUMBER_QUESTION;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOPS_THROUGH_QUESTION;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOP_FROM_SPECIFYING;
@@ -293,6 +294,10 @@ public class MessageHandler {
                 break;
             case DRIVER_TRIP_SEATS_NUMBER_SPECIFYING:
                 driverTripService.setSeatsNumber(message);
+                nextPage = DRIVER_TRIP_PRICE_SPECIFYING;
+                break;
+            case DRIVER_TRIP_PRICE_SPECIFYING:
+                driverTripService.setPrice(message);
                 nextPage = DRIVER_TRIP_DATE_CHOOSING;
                 break;
             case DRIVER_TRIP_DATE_CHOOSING:

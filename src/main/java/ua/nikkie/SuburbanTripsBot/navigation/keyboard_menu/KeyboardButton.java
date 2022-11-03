@@ -12,6 +12,7 @@ import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.D
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_COMMENT_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_DATE_CHOOSING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_DESTINATION_CHOOSING;
+import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_PRICE_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_SEATS_NUMBER_QUESTION;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_SEATS_NUMBER_SPECIFYING;
 import static ua.nikkie.SuburbanTripsBot.navigation.keyboard_menu.KeyboardPage.DRIVER_TRIP_STOPS_THROUGH_SPECIFYING;
@@ -86,7 +87,7 @@ public enum KeyboardButton {
         DRIVER_TRIP_SEATS_NUMBER_QUESTION, "Ні, пропустити"
     ),
     DRIVER_TRIP_SEATS_NUMBER_QUESTION_YES(
-        DRIVER_TRIP_DATE_CHOOSING, "Так, вказати таке саме значення"
+        DRIVER_TRIP_PRICE_SPECIFYING, "Так, вказати таке саме значення"
     ),
     DRIVER_TRIP_SEATS_NUMBER_QUESTION_NO(
         DRIVER_TRIP_SEATS_NUMBER_SPECIFYING, "Ні, змінити к-сть місць для поїздки"

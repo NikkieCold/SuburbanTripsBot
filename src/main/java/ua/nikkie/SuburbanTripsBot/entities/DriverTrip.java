@@ -3,8 +3,11 @@ package ua.nikkie.SuburbanTripsBot.entities;
 import static java.util.Objects.nonNull;
 import static lombok.AccessLevel.PRIVATE;
 
+import com.fasterxml.jackson.databind.deser.DataFormatReaders.Match;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -51,6 +54,8 @@ public class DriverTrip {
 
     String stopsThrough;
 
+    String price;
+
     String comment;
 
     LocalDate date;
@@ -63,6 +68,15 @@ public class DriverTrip {
 
     public DriverTrip(BotUser driver) {
         this.driver = driver;
+    }
+
+    public String getPrice() {
+        Pattern pattern = Pattern.compile("\\D+");
+        Matcher matcher = pattern.matcher(price);
+        if (!matcher.find()) {
+            return price.concat(" грн.");
+        }
+        return price;
     }
 
     public String getSeatsNumber() {

@@ -422,6 +422,24 @@ public enum KeyboardPage {
         }
     },
 
+    DRIVER_TRIP_PRICE_SPECIFYING {
+        @Override
+        public String getText(Message message) {
+            return "Вкажи вартість поїздки:"
+                + "\n(наприклад: 50)";
+        }
+
+        @Override
+        public ReplyKeyboard getReplyMarkup(Message message) {
+            return REPLY_KEYBOARD_REMOVE;
+        }
+
+        @Override
+        public InputPage isUserInputPage() {
+            return InputPage.DRIVER_TRIP_CREATE_INPUT;
+        }
+    },
+
     DRIVER_TRIP_DATE_CHOOSING {
         @Override
         public String getText(Message message) {

@@ -11,6 +11,26 @@ public enum InlineButton {
                     .url("t.me/perceverancx")
                     .build();
         }
+    },
+
+    DRIVER_TRIP_DELETE(null) {
+        @Override
+        public InlineKeyboardButton getInlineButton() {
+            return InlineKeyboardButton.builder()
+                .text("\u1303 Видалити поїздку")
+                .url("t.me/perceverancx")
+                .build();
+        }
+    },
+
+    DRIVER_TRIP_CHANGE_INFO(null) {
+        @Override
+        public InlineKeyboardButton getInlineButton() {
+            return InlineKeyboardButton.builder()
+                .text("\u1274 Змінити інформацію")
+                .url("t.me/perceverancx")
+                .build();
+        }
     };
 
     private final String callbackData;
